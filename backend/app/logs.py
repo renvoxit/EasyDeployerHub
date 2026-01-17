@@ -1,5 +1,6 @@
 from pathlib import Path
 
+# Directory to store log files
 LOGS_DIR = Path(__file__).parent / "logs"
 LOGS_DIR.mkdir(exist_ok=True)
 

@@ -35,6 +35,8 @@ def fake_deploy(deploy_id: str):
         append_log(deploy_id, f"Deploy failed: {e}")
         update_deployment_status(deploy_id, "failed")
 
+# API Endpoints
+
 
 @app.on_event("startup")
 def startup():

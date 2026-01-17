@@ -4,6 +4,8 @@ from datetime import datetime
 
 DB_PATH = Path(__file__).parent / "deployer.db"
 
+# Helper functions for database operations
+
 
 def get_conn():
     return sqlite3.connect(DB_PATH)
