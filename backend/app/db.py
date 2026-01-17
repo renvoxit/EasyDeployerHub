@@ -46,3 +46,14 @@ def get_deployment(deploy_id: str):
     if row:
         return {"deploy_id": row[0], "status": row[1], "created_at": row[2]}
     return None
+
+
+def update_deployment_status(deploy_id: str, status: str):
+    conn = get_conn()
+    cur = conn.cursor()
+    cur.execute(
+        "UPDATE deployments SET status = ? WHERE id = ?",
+        (status, deploy_id)
+    )
+    conn.commit()
+    conn.close()

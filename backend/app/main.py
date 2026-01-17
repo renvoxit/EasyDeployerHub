@@ -1,3 +1,4 @@
+from app.db import update_deployment_status
 from app.logs import read_logs
 import threading
 from app.db import create_deployment, get_deployment
@@ -14,18 +15,25 @@ app = FastAPI(title="Easy Deployer Hub")
 
 
 def fake_deploy(deploy_id: str):
-    steps = [
-        "Cloning repository...",
-        "Analyzing project...",
-        "Generating Dockerfile...",
-        "Building image...",
-        "Starting container...",
-        "Deploy finished"
-    ]
+    try:
+        steps = [
+            "Cloning repository...",
+            "Analyzing project...",
+            "Generating Dockerfile...",
+            "Building image...",
+            "Starting container...",
+        ]
 
-    for step in steps:
-        append_log(deploy_id, step)
-        time.sleep(1)
+        for step in steps:
+            append_log(deploy_id, step)
+            time.sleep(1)
+
+        append_log(deploy_id, "Deploy finished")
+        update_deployment_status(deploy_id, "success")
+
+    except Exception as e:
+        append_log(deploy_id, f"Deploy failed: {e}")
+        update_deployment_status(deploy_id, "failed")
 
 
 @app.on_event("startup")
