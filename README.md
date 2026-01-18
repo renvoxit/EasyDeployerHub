@@ -8,10 +8,19 @@ GitHub repository → automatic build → running service with public URL.
 ---
 
 ## Status
-Active development.
 
-Current stage: backend core.
-This is not a finished product, but a working foundation.
+Easy Deployer Hub is an early-stage prototype.
+
+Currently implemented:
+- Backend service (FastAPI)
+- Basic deploy endpoint
+- Deployment status tracking
+- Deploy log streaming (in progress)
+
+Planned next:
+- GitHub OAuth
+- Repository selection
+- Real deployment pipeline
 
 ---
 
@@ -72,6 +81,10 @@ Example:
 ---
 
 ## Contributing
+
+Issues labeled as `help wanted` are safe to work on and do not affect core architecture.
+Early-stage contributions are welcome.
+
 Looking for developers interested in:
 - backend infrastructure
 - deployment systems
