@@ -1,4 +1,17 @@
-import traceback
+# ROLE:
+# Deployment orchestration logic.
+#
+# RESPONSIBILITIES:
+# - Coordinate deployment steps.
+# - Control deployment workflow state.
+# - Delegate execution to services and worker.
+#
+# MUST NOT:
+# - Execute Docker commands directly.
+# - Perform file system operations.
+# - Contain infrastructure-specific code.
+
+import time
 
 from app.core.log_stream import append_log
 from app.db.crud.deploys import update_deployment_status

@@ -1,3 +1,17 @@
+# ROLE:
+# Backend application entry point.
+#
+# RESPONSIBILITIES:
+# - Create FastAPI application instance.
+# - Register API routers.
+# - Register middleware.
+# - Define startup and shutdown lifecycle.
+#
+# MUST NOT:
+# - Contain business logic.
+# - Access database directly.
+# - Call GitHub, Docker, or deployment logic.
+
 from uuid import uuid4
 import threading
 

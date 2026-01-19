@@ -1,3 +1,13 @@
+# ROLE:
+# Deployment-related database operations.
+#
+# RESPONSIBILITIES:
+# - Persist deployment state and metadata.
+#
+# MUST NOT:
+# - Control deployment workflow.
+# - Interact with external systems.
+
 from datetime import datetime
 
 from app.db.session import get_conn

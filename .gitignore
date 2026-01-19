@@ -1,18 +1,26 @@
+# Python
 __pycache__/
 *.pyc
 *.pyo
 *.pyd
-venv/
 .venv/
-env/
 .env
 .env.*
-*.db
-*.sqlite
-*.sqlite3
-logs/
-*.log
+
+# Node / Frontend
 node_modules/
 dist/
+build/
+
+# Docker / runtime
+*.log
+tmp/
+data/
+
+# IDE
+.vscode/
+.idea/
+
+# OS
 .DS_Store
 Thumbs.db

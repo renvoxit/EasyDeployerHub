@@ -1,4 +1,16 @@
-from datetime import datetime
+# ROLE:
+# Deployment log streaming logic.
+#
+# RESPONSIBILITIES:
+# - Aggregate deployment logs.
+# - Expose log stream interface.
+# - Coordinate log flow between services and API.
+#
+# MUST NOT:
+# - Generate logs.
+# - Write logs to storage.
+# - Depend on HTTP layer.
+
 from pathlib import Path
 
 LOGS_DIR = Path(__file__).parent.parent / "logs"
