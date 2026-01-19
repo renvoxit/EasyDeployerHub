@@ -1,3 +1,15 @@
+# ROLE:
+# Database session management.
+#
+# RESPONSIBILITIES:
+# - Create and manage database sessions.
+# - Provide session factory for other layers.
+#
+# MUST NOT:
+# - Contain business logic.
+# - Execute queries directly.
+# - Depend on HTTP or API layers.
+
 import sqlite3
 from pathlib import Path
 
