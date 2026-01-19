@@ -18,22 +18,33 @@ from app.db.crud.deploys import update_deployment_status
 
 
 def run_deploy(deploy_id: str):
+    current_stage = "Initializing"
     try:
-        steps = [
-            "Cloning repository...",
-            "Analyzing project...",
-            "Generating Dockerfile...",
-            "Building image...",
-            "Starting container...",
-        ]
+        append_log(deploy_id, "Deploy started")
 
-        for step in steps:
-            append_log(deploy_id, step)
-            time.sleep(1)
+        current_stage = "Cloning repository"
+        append_log(deploy_id, "Cloning repository...")
 
+        current_stage = "Analyzing project"
+        append_log(deploy_id, "Analyzing project...")
+
+        current_stage = "Generating Dockerfile"
+        append_log(deploy_id, "Generating Dockerfile...")
+
+        current_stage = "Building image"
+        append_log(deploy_id, "Building image...")
+        append_log(deploy_id, "Build successful")
+
+        current_stage = "Starting container"
+        append_log(deploy_id, "Starting container...")
+        append_log(deploy_id, "Container started successfully")
+
+        current_stage = "Finalizing"
         append_log(deploy_id, "Deploy finished")
         update_deployment_status(deploy_id, "success")
 
     except Exception as e:
-        append_log(deploy_id, f"Deploy failed: {e}")
+        error_msg = f"{current_stage} failed: {e}"
+        append_log(deploy_id, error_msg)
+        append_log(deploy_id, traceback.format_exc())
         update_deployment_status(deploy_id, "failed")
