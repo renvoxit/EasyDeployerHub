@@ -1,0 +1,67 @@
+version: "3.9"
+
+services:
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: edh-backend
+    env_file:
+      - .env
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db
+    networks:
+      - edh-network
+
+  worker:
+    build:
+      context: ./worker
+      dockerfile: Dockerfile
+    container_name: edh-worker
+    env_file:
+      - .env
+    depends_on:
+      - backend
+      - db
+    networks:
+      - edh-network
+
+  db:
+    image: postgres:15
+    container_name: edh-postgres
+    environment:
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: deployer
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    networks:
+      - edh-network
+
+  proxy:
+    image: traefik:v3.0
+    container_name: edh-proxy
+    command:
+      - "--providers.docker=true"
+      - "--providers.file.directory=/dynamic"
+      - "--providers.file.watch=true"
+      - "--entrypoints.web.address=:80"
+    ports:
+      - "80:80"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ./infra/traefik/traefik.yml:/traefik.yml:ro
+      - ./infra/traefik/dynamic:/dynamic:ro
+    networks:
+      - edh-network
+
+volumes:
+  postgres_data:
+
+networks:
+  edh-network:
+    driver: bridge
