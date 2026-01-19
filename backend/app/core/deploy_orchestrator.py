@@ -12,6 +12,7 @@
 # - Contain infrastructure-specific code.
 
 import time
+import traceback
 
 from app.core.log_stream import append_log
 from app.db.crud.deploys import update_deployment_status
