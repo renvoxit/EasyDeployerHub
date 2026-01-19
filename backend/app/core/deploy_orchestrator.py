@@ -1,4 +1,3 @@
-import time
 import traceback
 
 from app.core.log_stream import append_log
@@ -12,24 +11,19 @@ def run_deploy(deploy_id: str):
 
         current_stage = "Cloning repository"
         append_log(deploy_id, "Cloning repository...")
-        time.sleep(1)
 
         current_stage = "Analyzing project"
         append_log(deploy_id, "Analyzing project...")
-        time.sleep(1)
 
         current_stage = "Generating Dockerfile"
         append_log(deploy_id, "Generating Dockerfile...")
-        time.sleep(1)
 
         current_stage = "Building image"
         append_log(deploy_id, "Building image...")
-        time.sleep(1)
         append_log(deploy_id, "Build successful")
 
         current_stage = "Starting container"
         append_log(deploy_id, "Starting container...")
-        time.sleep(1)
         append_log(deploy_id, "Container started successfully")
 
         current_stage = "Finalizing"

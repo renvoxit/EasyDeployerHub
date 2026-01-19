@@ -1,3 +1,4 @@
+from datetime import datetime
 from pathlib import Path
 
 LOGS_DIR = Path(__file__).parent.parent / "logs"
@@ -9,8 +10,10 @@ def log_path(deploy_id: str) -> Path:
 
 
 def append_log(deploy_id: str, line: str):
+    timestamp = datetime.now().strftime("[%Y-%m-%d %H:%M:%S]")
+    log_line = f"{timestamp} {line}"
     with open(log_path(deploy_id), "a", encoding="utf-8") as f:
-        f.write(line + "\n")
+        f.write(log_line + "\n")
 
 
 def read_logs(deploy_id: str) -> str:
