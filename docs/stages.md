@@ -126,3 +126,12 @@ At this stage, the platform is safe for untrusted code.
 - Production readiness
 
 At this stage, the system operates as a full deployment platform.
+
+## Common Backend Deployment Issues
+
+- Build errors (dependency failures, syntax issues)
+- Missing or incorrect port configuration (wrong port, binding to localhost)
+- Runtime crashes (startup exceptions, OOM kills)
+- Environment variable issues (missing keys, typos)
+- Database connection failures or unapplied migrations
+- Health check timeouts or misconfiguration
