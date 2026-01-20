@@ -11,16 +11,17 @@ GitHub repository → automatic build → running service with public URL.
 
 Easy Deployer Hub is an early-stage prototype.
 
-Currently implemented:
-- Backend service (FastAPI)
-- Basic deploy endpoint
-- Deployment status tracking
-- Deploy log streaming (in progress)
+#### Current state
 
-Planned next:
-- GitHub OAuth
-- Repository selection
-- Real deployment pipeline
+- Backend service is running and accepts HTTP requests.
+- GitHub OAuth authentication flow is implemented and functional.
+- The application successfully obtains a GitHub access token after authorization.
+- Basic deployment orchestration primitives (statuses and logs) are present.
+
+#### Next step
+
+GitHub API integration:
+Fetching authenticated user data and user repositories to enable repository selection for deployment.
 
 ---
 
