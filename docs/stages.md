@@ -7,7 +7,7 @@ Current stage is marked explicitly.
 
 ---
 
-## Stage 1 — Backend Skeleton -> CURRENT
+## Stage 1 — Backend Skeleton
 **Status:** 
 
 - Backend service exists and can be started
@@ -19,7 +19,7 @@ It only provides a stable foundation for further development.
 
 ---
 
-## Stage 2 — GitHub Integration
+## Stage 2 — GitHub Integration -> CURRENT
 
 - GitHub OAuth authentication
 - Access to user repositories via GitHub API
