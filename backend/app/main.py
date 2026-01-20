@@ -21,8 +21,12 @@ from app.core.deploy_orchestrator import run_deploy
 from app.core.log_stream import read_logs
 from app.db.crud.deploys import create_deployment, get_deployment
 from app.db.session import init_db
+from app.api.routes.auth_github import router as github_auth_router
+from app.api.routes.repos import router as github_repos_router
 
 app = FastAPI(title="Easy Deployer Hub")
+app.include_router(github_auth_router)
+app.include_router(github_repos_router)
 
 
 @app.on_event("startup")
