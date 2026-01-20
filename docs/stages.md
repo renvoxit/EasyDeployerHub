@@ -7,7 +7,7 @@ Current stage is marked explicitly.
 
 ---
 
-## Stage 1 — Backend Skeleton
+## Stage 1 — Backend Skeleton -> DONE
 **Status:** 
 
 - Backend service exists and can be started
