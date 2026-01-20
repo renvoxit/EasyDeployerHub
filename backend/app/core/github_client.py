@@ -14,6 +14,7 @@
 import os
 from typing import Any, Dict, List
 import requests
+from app.settings import settings
 
 
 GITHUB_AUTH_URL = "https://github.com/login/oauth/authorize"
@@ -22,7 +23,7 @@ GITHUB_API_BASE = "https://api.github.com"
 
 
 def _client_id() -> str:
-    v = os.getenv("GITHUB_CLIENT_ID", "").strip()
+    v = settings.GITHUB_CLIENT_ID
     if not v:
         raise RuntimeError("GITHUB_CLIENT_ID is not set")
     return v
