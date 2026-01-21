@@ -90,4 +90,4 @@ Looking for developers interested in:
 - deployment systems
 - Docker & automation
 
-Open an issue if interested.
+Open an issue or discussion if interested.
