@@ -16,6 +16,7 @@ import traceback
 
 from app.core.log_stream import append_log
 from app.db.crud.deploys import update_deployment_status
+from app.services.repo_cloner import clone_repo
 
 
 def run_deploy(deploy_id: str):
@@ -24,7 +25,8 @@ def run_deploy(deploy_id: str):
         append_log(deploy_id, "Deploy started")
 
         current_stage = "Cloning repository"
-        append_log(deploy_id, "Cloning repository...")
+        workspace = clone_repo(deploy_id, "placeholder_repo")
+        append_log(deploy_id, f"Workspace path: {workspace}")
 
         current_stage = "Analyzing project"
         append_log(deploy_id, "Analyzing project...")
