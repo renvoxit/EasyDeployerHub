@@ -18,6 +18,7 @@ from app.core.log_stream import append_log
 from app.db.crud.deploys import update_deployment_status
 from app.services.repo_cloner import clone_repo
 from app.services.analyzer import analyze_project
+from app.services.template_renderer import render_templates
 
 
 def run_deploy(deploy_id: str):
@@ -34,7 +35,8 @@ def run_deploy(deploy_id: str):
         append_log(deploy_id, f"Project type selected: {project_type}")
 
         current_stage = "Generating Dockerfile"
-        append_log(deploy_id, "Generating Dockerfile...")
+        dockerfile_path = render_templates(deploy_id, workspace, project_type)
+        append_log(deploy_id, f"Template generated: {dockerfile_path}")
 
         current_stage = "Building image"
         append_log(deploy_id, "Building image...")
