@@ -19,6 +19,7 @@ from app.db.crud.deploys import update_deployment_status
 from app.services.repo_cloner import clone_repo
 from app.services.analyzer import analyze_project
 from app.services.template_renderer import render_templates
+from app.services.docker_engine import build_image, run_container
 
 
 def run_deploy(deploy_id: str):
@@ -39,12 +40,11 @@ def run_deploy(deploy_id: str):
         append_log(deploy_id, f"Template generated: {dockerfile_path}")
 
         current_stage = "Building image"
-        append_log(deploy_id, "Building image...")
-        append_log(deploy_id, "Build successful")
+        image_tag = build_image(deploy_id, workspace)
 
         current_stage = "Starting container"
-        append_log(deploy_id, "Starting container...")
-        append_log(deploy_id, "Container started successfully")
+        container_id = run_container(deploy_id, image_tag)
+        append_log(deploy_id, f"Container ID: {container_id}")
 
         current_stage = "Finalizing"
         append_log(deploy_id, "Deploy finished")
