@@ -20,6 +20,7 @@ from app.services.repo_cloner import clone_repo
 from app.services.analyzer import analyze_project
 from app.services.template_renderer import render_templates
 from app.services.docker_engine import build_image, run_container
+from app.services.proxy_manager import expose_service
 
 
 def run_deploy(deploy_id: str):
@@ -45,6 +46,9 @@ def run_deploy(deploy_id: str):
         current_stage = "Starting container"
         container_id = run_container(deploy_id, image_tag)
         append_log(deploy_id, f"Container ID: {container_id}")
+        current_stage = "Configuring proxy"
+        public_url = expose_service(deploy_id, container_id)
+        append_log(deploy_id, f"Public URL: {public_url}")
 
         current_stage = "Finalizing"
         append_log(deploy_id, "Deploy finished")
