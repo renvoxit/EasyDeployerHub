@@ -1,96 +1,113 @@
 # EasyDeployerHub
 
-Early-stage deployment backend MVP.
+Backend-first deployment MVP.
 
 Goal:
 
 GitHub repository → automatic build → running service → public URL.
 
-EasyDeployerHub is a backend-first deployment platform focused on building a minimal Heroku-like pipeline for personal and experimental projects.
+EasyDeployerHub is a modular deployment platform designed to build a minimal Heroku-like pipeline for personal and experimental projects.
+
+The project focuses on clean orchestration, strict service boundaries, and incremental infrastructure integration.
 
 ---
 
 ## Project Status
 
-EasyDeployerHub is currently a **skeleton MVP with stubbed runtime**.
+EasyDeployerHub is currently a backend MVP with real GitHub integration and stubbed runtime infrastructure.
 
-The core deployment pipeline is implemented and functional in simulated form.
+The architecture and API layer are real.
+Infrastructure (Git clone, Docker, reverse proxy) remains simulated.
 
-This phase focuses on architecture, orchestration flow, and system boundaries before integrating real infrastructure.
+This allows stable system design before integrating heavy runtime components.
 
 ---
 
 ## Current State
 
-The backend already supports a full end-to-end deployment flow:
+The backend supports a complete end-to-end deployment flow:
 
-```
+`clone_repo → analyze_project → render_templates → build_image → run_container → expose_service`
 
-clone_repo → analyze_project → render_templates → build_image → run_container → expose_service
+The orchestration flow is real and modular.
+Infrastructure-heavy steps are currently stubbed.
 
-````
+## Implemented:
 
-### Implemented:
+### Deployment Layer
 
-- FastAPI backend running locally and accepting HTTP requests
-- API endpoint to trigger deployments (`POST /deploy`)
+- FastAPI backend
+- API-triggered deployment (POST /deploy)
 - Deployment orchestrator coordinating all stages
-- Modular service architecture:
+- Modular service-based pipeline:
   - repo_cloner
   - analyzer
   - template_renderer
-  - docker_engine
-  - proxy_manager
-- Deployment lifecycle tracking:
-  - running / success / failed
-- Centralized deployment logs per stage
+  - docker_engine (stub)
+  - proxy_manager (stub)
+- Deployment lifecycle tracking (running / success / failed)
+- Stage-based deployment logs
 - Deployment ID returned to client
-- Public URL generated (stub)
-- Persistent storage (SQLite/Postgres depending on environment)
-- Clean separation between orchestration and services
+- Stub-generated public URL
+- Database persistence (SQLite / Postgres)
+- Clear separation between orchestration and services
 
-All heavy operations (Git clone, Docker build/run, proxy routing) are currently implemented as **stubs**.
+### GitHub Integration Layer
 
-Architecture is real. Infrastructure is mocked.
-
-This allows rapid iteration on system design before integrating Docker, GitHub API, and Traefik.
+- GitHub OAuth authentication flow
+- Access token exchange
+- Centralized token dependency (`get_token`)
+- `GET /github/me` endpoint
+- `GET /github/repos` endpoint
+- Pagination support (`page, per_page`)
+- Link header parsing for total count estimation
+- Typed Pydantic response schemas
+- Clean error handling (401 / 502 / 500)
+- Swagger documentation for all endpoints
 
 ---
 
-## What Exists Now
+## What Is Stubbed
 
-- FastAPI backend
-- API-triggered deployment flow
-- Deployment orchestrator
-- Service-based pipeline
-- Deployment logs
-- Deployment lifecycle states
-- Database persistence
-- Modular backend architecture
+The following components simulate behavior but do not yet execute real infrastructure actions:
+- Git clone (repo_cloner)
+- Docker build / run (docker_engine)
+- Reverse proxy routing (proxy_manager)
+- Real public URL exposure
+The orchestration is real; execution is mocked.
 
-This already forms a working MVP skeleton.
+## API (Current)
+
+Deployment:
+`POST /deploy`
+
+GitHub:
+```
+GET /github/me
+GET /github/repos?page=&per_page=
+```
+Swagger UI:
+
+`http://127.0.0.1:8000/docs`
+
+## Current Phase
+
+Backend MVP with GitHub API complete, infrastructure integration pending.
+
+Next phase focuses on replacing stubs with real infrastructure components.
 
 ---
 
 ## Next Steps
 
-Immediate priorities:
-
-1. Persist `public_url` and final deployment status to database
-2. Add `GET /deploy/{id}` endpoint (status + logs)
+1. Persist final deployment status and public URL
+2. Add `GET /deploy/{id}` (status + logs)
 3. Replace stubs with real implementations:
-   - repo_cloner → real Git clone
-   - docker_engine → docker build / run
-   - proxy_manager → Traefik routing
-4. GitHub API integration:
-   - fetch authenticated user
-   - list repositories
-   - enable repository selection
-5. Frontend wiring
-
-Current phase: **Skeleton MVP with stubbed runtime**
-
-Next phase: **Real infrastructure integration**
+  - repo_cloner → real Git clone
+  - docker_engine → Docker build / run
+  - proxy_manager → Traefik routing
+4. Infrastructure hardening (error handling, retries, timeouts)
+5. Frontend integration
 
 ---
 
@@ -127,52 +144,18 @@ Swagger UI:
 
 ---
 
-## API (Current)
-
-Trigger deployment:
-
-```
-POST /deploy
-```
-
-Returns:
-
-```json
-{
-  "deploy_id": "...",
-  "status": "running"
-}
-```
-
-Planned:
-
-```
-GET /deploy/{deploy_id}
-```
-
----
-
-## Roadmap (Short)
-
-* real git clone
-* project analysis
-* Docker build & run
-* Traefik routing
-* GitHub API integration
-* frontend dashboard
-
----
-
 ## Contributing
 
-This project is early-stage and architecture-driven.
+This project is architecture-driven and modular by design.
 
-Issues labeled `help wanted` are safe to work on and do not affect core design.
+Core orchestration boundaries should not be modified without discussion.
 
-Looking for contributors interested in:
+Good areas for contribution:
 
-* backend infrastructure
-* deployment systems
-* Docker & automation
+- Infrastructure integration
+- Docker runtime implementation
+- Proxy configuration
+- Performance and error resilience
+- Frontend dashboard
 
-Open an issue or discussion if interested.
+Open an issue before making structural changes.
