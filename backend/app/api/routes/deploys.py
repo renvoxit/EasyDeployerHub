@@ -10,29 +10,43 @@
 # - Run Docker commands.
 # - Manage queues directly.
 
-from fastapi import APIRouter, Depends
-from sqlalchemy.orm import Session
+from uuid import uuid4
 
-from app.db.session import get_db
-from app.db.crud.deploys import create_deployment
+from fastapi import APIRouter, HTTPException
+
 from app.core.deploy_orchestrator import run_deploy
+from app.db.crud.deploys import create_deployment, get_deployment
 
 router = APIRouter(prefix="/deploys", tags=["deploys"])
 
 
 @router.post("/")
-def trigger_deploy(repo_url: str, db: Session = Depends(get_db)):
+def trigger_deploy(repo_url: str):
     """
     Create deployment and start pipeline.
     """
 
-    # 1. create deployment record
-    deployment = create_deployment(db=db, repo_url=repo_url)
+    deploy_id = str(uuid4())
 
-    deploy_id = deployment.id
+    # create deployment record
+    create_deployment(deploy_id, "pending")
 
-    # 2. start deployment pipeline
+    # start deployment pipeline
     run_deploy(deploy_id)
 
-    # 3. return id to client
+    # return id to client
     return {"deploy_id": deploy_id}
+
+
+@router.get("/{deploy_id}")
+def read_deploy(deploy_id: str):
+    """
+    Return deployment status by id.
+    """
+
+    deployment = get_deployment(deploy_id)
+
+    if not deployment:
+        raise HTTPException(status_code=404, detail="Deployment not found")
+
+    return deployment
