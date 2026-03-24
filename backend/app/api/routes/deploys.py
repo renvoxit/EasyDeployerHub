@@ -10,48 +10,51 @@
 # - Run Docker commands.
 # - Manage queues directly.
 
-from threading import Thread
-from uuid import uuid4
+import threading
+import uuid
 
 from fastapi import APIRouter, HTTPException
 
 from app.core.deploy_orchestrator import run_deploy
+from app.core.log_stream import append_log, read_logs
 from app.db.crud.deploys import create_deployment, get_deployment
 
-router = APIRouter(prefix="/deploys", tags=["deploys"])
+router = APIRouter()
 
 
-@router.post("/")
-def trigger_deploy(repo_url: str):
-    """
-    Create deployment and start pipeline in background.
-    """
+@router.post("/deploy")
+def deploy(repo_url: str):
+    deploy_id = str(uuid.uuid4())
 
-    deploy_id = str(uuid4())
-
-    # create deployment record
     create_deployment(deploy_id, "pending")
+    append_log(deploy_id, "Deploy request received")
 
-    # start deployment pipeline in background
-    Thread(
+    thread = threading.Thread(
         target=run_deploy,
         args=(deploy_id, repo_url),
         daemon=True,
-    ).start()
+    )
+    thread.start()
 
-    # return id immediately
-    return {"deploy_id": deploy_id}
+    return {
+        "deploy_id": deploy_id,
+        "status": "started",
+    }
 
 
-@router.get("/{deploy_id}")
-def read_deploy(deploy_id: str):
-    """
-    Return deployment status by id.
-    """
-
+@router.get("/status/{deploy_id}")
+def status(deploy_id: str):
     deployment = get_deployment(deploy_id)
 
     if not deployment:
         raise HTTPException(status_code=404, detail="Deployment not found")
 
     return deployment
+
+
+@router.get("/logs/{deploy_id}")
+def logs(deploy_id: str):
+    return {
+        "deploy_id": deploy_id,
+        "logs": read_logs(deploy_id),
+    }
