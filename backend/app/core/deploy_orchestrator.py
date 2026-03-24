@@ -15,7 +15,7 @@ import time
 import traceback
 
 from app.core.log_stream import append_log
-from app.db.crud.deploys import update_deployment_status
+from app.db.crud.deploys import update_deployment_status, update_deployment_result
 from app.services.repo_cloner import clone_repo
 from app.services.analyzer import analyze_project
 from app.services.template_renderer import render_templates
@@ -46,13 +46,14 @@ def run_deploy(deploy_id: str):
         current_stage = "Starting container"
         container_id = run_container(deploy_id, image_tag)
         append_log(deploy_id, f"Container ID: {container_id}")
+
         current_stage = "Configuring proxy"
         public_url = expose_service(deploy_id, container_id)
         append_log(deploy_id, f"Public URL: {public_url}")
 
         current_stage = "Finalizing"
         append_log(deploy_id, "Deploy finished")
-        update_deployment_status(deploy_id, "success")
+        update_deployment_result(deploy_id, "success", public_url)
 
     except Exception as e:
         error_msg = f"{current_stage} failed: {e}"

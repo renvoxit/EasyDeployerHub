@@ -17,8 +17,8 @@ def create_deployment(deploy_id: str, status: str):
     conn = get_conn()
     cur = conn.cursor()
     cur.execute(
-        "INSERT INTO deployments (id, status, created_at) VALUES (?, ?, ?)",
-        (deploy_id, status, datetime.utcnow().isoformat())
+        "INSERT INTO deployments (id, status, public_url, created_at) VALUES (?, ?, ?, ?)",
+        (deploy_id, status, None, datetime.utcnow().isoformat())
     )
     conn.commit()
     conn.close()
@@ -35,11 +35,22 @@ def update_deployment_status(deploy_id: str, status: str):
     conn.close()
 
 
+def update_deployment_result(deploy_id: str, status: str, public_url: str):
+    conn = get_conn()
+    cur = conn.cursor()
+    cur.execute(
+        "UPDATE deployments SET status = ?, public_url = ? WHERE id = ?",
+        (status, public_url, deploy_id)
+    )
+    conn.commit()
+    conn.close()
+
+
 def get_deployment(deploy_id: str):
     conn = get_conn()
     cur = conn.cursor()
     cur.execute(
-        "SELECT id, status, created_at FROM deployments WHERE id = ?",
+        "SELECT id, status, public_url, created_at FROM deployments WHERE id = ?",
         (deploy_id,)
     )
     row = cur.fetchone()
@@ -51,5 +62,6 @@ def get_deployment(deploy_id: str):
     return {
         "deploy_id": row[0],
         "status": row[1],
-        "created_at": row[2],
+        "public_url": row[2],
+        "created_at": row[3],
     }
