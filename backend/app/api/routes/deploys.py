@@ -10,6 +10,7 @@
 # - Run Docker commands.
 # - Manage queues directly.
 
+from threading import Thread
 from uuid import uuid4
 
 from fastapi import APIRouter, HTTPException
@@ -23,7 +24,7 @@ router = APIRouter(prefix="/deploys", tags=["deploys"])
 @router.post("/")
 def trigger_deploy(repo_url: str):
     """
-    Create deployment and start pipeline.
+    Create deployment and start pipeline in background.
     """
 
     deploy_id = str(uuid4())
@@ -31,10 +32,14 @@ def trigger_deploy(repo_url: str):
     # create deployment record
     create_deployment(deploy_id, "pending")
 
-    # start deployment pipeline
-    run_deploy(deploy_id)
+    # start deployment pipeline in background
+    Thread(
+        target=run_deploy,
+        args=(deploy_id, repo_url),
+        daemon=True,
+    ).start()
 
-    # return id to client
+    # return id immediately
     return {"deploy_id": deploy_id}
 
 

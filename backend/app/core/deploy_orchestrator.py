@@ -11,7 +11,6 @@
 # - Perform file system operations.
 # - Contain infrastructure-specific code.
 
-import time
 import traceback
 
 from app.core.log_stream import append_log
@@ -23,13 +22,14 @@ from app.services.docker_engine import build_image, run_container
 from app.services.proxy_manager import expose_service
 
 
-def run_deploy(deploy_id: str):
+def run_deploy(deploy_id: str, repo_url: str):
     current_stage = "Initializing"
     try:
+        update_deployment_status(deploy_id, "running")
         append_log(deploy_id, "Deploy started")
 
         current_stage = "Cloning repository"
-        workspace = clone_repo(deploy_id, "placeholder_repo")
+        workspace = clone_repo(deploy_id, repo_url)
         append_log(deploy_id, f"Workspace path: {workspace}")
 
         current_stage = "Analyzing project"
