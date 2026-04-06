@@ -15,14 +15,25 @@ import uuid
 
 from fastapi import APIRouter, HTTPException
 
+from app.api.schemas.deploy import DeploymentResponse
 from app.core.deploy_orchestrator import run_deploy
 from app.core.log_stream import append_log, read_logs
 from app.db.crud.deploys import create_deployment, get_deployment
 
-router = APIRouter()
+router = APIRouter(prefix="/deploy", tags=["deploy"])
 
 
-@router.post("/deploy")
+@router.get("/{deploy_id}", response_model=DeploymentResponse)
+def get_deploy(deploy_id: str):
+    deployment = get_deployment(deploy_id)
+
+    if not deployment:
+        raise HTTPException(status_code=404, detail="Deployment not found")
+
+    return deployment
+
+
+@router.post("")
 def deploy(repo_url: str):
     deploy_id = str(uuid.uuid4())
 
@@ -34,6 +45,7 @@ def deploy(repo_url: str):
         args=(deploy_id, repo_url),
         daemon=True,
     )
+
     thread.start()
 
     return {
