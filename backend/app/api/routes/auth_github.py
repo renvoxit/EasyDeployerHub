@@ -16,7 +16,12 @@ from uuid import uuid4
 from fastapi import APIRouter, HTTPException
 from fastapi.responses import RedirectResponse
 
-from app.core.github_client import build_authorize_url, exchange_code_for_token
+from app.core.github_client import (
+    build_authorize_url,
+    exchange_code_for_token,
+    fetch_user,
+)
+from app.db.crud.users import upsert_user_from_github
 
 router = APIRouter(prefix="/auth/github", tags=["auth"])
 
@@ -42,8 +47,13 @@ def github_callback(code: str | None = None, state: str | None = None):
         raise HTTPException(status_code=400, detail="Invalid state")
 
     token = exchange_code_for_token(code)
+    github_user = fetch_user(token)
+    user = upsert_user_from_github(github_user)
+
     _token_store[state] = token
 
-    # Stage 2 dev response: show token + state.
-    # Later we’ll store token properly and issue a session.
-    return {"ok": True, "state": state, "access_token": token}
+    return {
+        "ok": True,
+        "state": state,
+        "user": user,
+    }
