@@ -14,16 +14,34 @@ import threading
 import uuid
 
 from fastapi import APIRouter, HTTPException
+from pydantic import BaseModel, HttpUrl
 
+from app.api.schemas.deploy import DeploymentResponse
 from app.core.deploy_orchestrator import run_deploy
 from app.core.log_stream import append_log, read_logs
 from app.db.crud.deploys import create_deployment, get_deployment
 
-router = APIRouter()
+
+class DeployRequest(BaseModel):
+    repo_url: HttpUrl
 
 
-@router.post("/deploy")
-def deploy(repo_url: str):
+router = APIRouter(prefix="/deploy", tags=["deploy"])
+
+
+@router.get("/{deploy_id}", response_model=DeploymentResponse)
+def get_deploy(deploy_id: str):
+    deployment = get_deployment(deploy_id)
+
+    if not deployment:
+        raise HTTPException(status_code=404, detail="Deployment not found")
+
+    return deployment
+
+
+@router.post("")
+def deploy(request: DeployRequest):
+    repo_url = str(request.repo_url)
     deploy_id = str(uuid.uuid4())
 
     create_deployment(deploy_id, "pending")
