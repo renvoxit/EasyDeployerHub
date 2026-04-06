@@ -18,14 +18,14 @@ from app.db.session import init_db
 from app.api.routes.auth_github import router as github_auth_router
 from app.api.routes.repos import router as github_repos_router
 from app.api.routes.user import router as github_user_router
-from app.api.routes.deploys import router as deploys_router
+from app.api.routes.deploys import router as deploy_router
 
 app = FastAPI(title="Easy Deployer Hub")
 
 app.include_router(github_auth_router)
 app.include_router(github_repos_router)
 app.include_router(github_user_router)
-app.include_router(deploys_router)
+app.include_router(deploy_router)
 
 
 @app.on_event("startup")
