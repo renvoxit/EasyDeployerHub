@@ -12,11 +12,12 @@
 import os
 import uuid
 import subprocess
+import tempfile
 
 from app.core.log_stream import append_log
 
 
-WORKSPACE_ROOT = "/tmp/edh-workspaces"
+WORKSPACE_ROOT = os.path.join(tempfile.gettempdir(), "edh-workspaces")
 
 
 def clone_repo(deploy_id: str, repo_url: str) -> str:
