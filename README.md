@@ -14,12 +14,19 @@ The project focuses on clean orchestration, strict service boundaries, and incre
 
 ## Project Status
 
-EasyDeployerHub is currently a backend MVP with real GitHub integration and stubbed runtime infrastructure.
+EasyDeployerHub is currently a backend MVP with a working end-to-end deployment pipeline.
 
-The architecture and API layer are real.
-Infrastructure (Git clone, Docker, reverse proxy) remains simulated.
+Core infrastructure components are implemented and operational:
 
-This allows stable system design before integrating heavy runtime components.
+- Git repository cloning
+- Project analysis
+- Docker image build
+- Container execution
+- Reverse proxy exposure
+- Public URL generation
+
+The system is functional but still lacks production-level stability,
+security, and lifecycle management features.
 
 ---
 
@@ -30,7 +37,8 @@ The backend supports a complete end-to-end deployment flow:
 `clone_repo → analyze_project → render_templates → build_image → run_container → expose_service`
 
 The orchestration flow is real and modular.
-Infrastructure-heavy steps are currently stubbed.
+Infrastructure components are partially implemented.
+Core deployment pipeline is operational end-to-end.
 
 ## Implemented:
 
@@ -43,8 +51,8 @@ Infrastructure-heavy steps are currently stubbed.
   - repo_cloner
   - analyzer
   - template_renderer
-  - docker_engine (stub)
-  - proxy_manager (stub)
+  - docker_engine
+  - proxy_manager
 - Deployment lifecycle tracking (running / success / failed)
 - Stage-based deployment logs
 - Deployment ID returned to client
@@ -100,14 +108,13 @@ Next phase focuses on replacing stubs with real infrastructure components.
 
 ## Next Steps
 
-1. Persist final deployment status and public URL
-2. Add `GET /deploy/{id}` (status + logs)
-3. Replace stubs with real implementations:
-  - repo_cloner → real Git clone
-  - docker_engine → Docker build / run
-  - proxy_manager → Traefik routing
-4. Infrastructure hardening (error handling, retries, timeouts)
-5. Frontend integration
+1. Deployment lifecycle management (restart / stop / delete)
+2. Deployment list endpoint
+3. Resource cleanup
+4. Security isolation
+5. Resource limits
+6. Production hardening
+7. Frontend dashboard
 
 ---
 

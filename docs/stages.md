@@ -19,7 +19,7 @@ It only provides a stable foundation for further development.
 
 ---
 
-## Stage 2 — GitHub Integration -> CURRENT
+## Stage 2 — GitHub Integration -> DONE
 
 - GitHub OAuth authentication
 - Access to user repositories via GitHub API
@@ -29,7 +29,7 @@ At this stage, the system can interact with real user repositories.
 
 ---
 
-## Stage 3 — Repository Intake
+## Stage 3 — Repository Intake -> DONE
 
 - Selection of a repository for deployment
 - Repository cloning into a temporary workspace
@@ -39,7 +39,7 @@ At this stage, the system can fetch and prepare user code.
 
 ---
 
-## Stage 4 — Project Analysis
+## Stage 4 — Project Analysis -> DONE
 
 - Automatic detection of project type (frontend, backend, static, etc.)
 - Detection of build and run requirements
@@ -49,7 +49,7 @@ At this stage, the system understands how a project should be executed.
 
 ---
 
-## Stage 5 — Deployment Configuration Generation
+## Stage 5 — Deployment Configuration Generation -> DONE
 
 - Automatic generation of Dockerfile
 - Selection of deployment templates
@@ -59,7 +59,7 @@ At this stage, projects are ready for containerization.
 
 ---
 
-## Stage 6 — Build and Run
+## Stage 6 — Build and Run -> DONE
 
 - Docker image build
 - Container startup
@@ -69,7 +69,7 @@ At this stage, projects are actually running on the server.
 
 ---
 
-## Stage 7 — Deployment Orchestration
+## Stage 7 — Deployment Orchestration -> DONE
 
 - Asynchronous deployment jobs
 - Queue-based execution
@@ -79,7 +79,7 @@ At this stage, multiple deployments can be handled reliably.
 
 ---
 
-## Stage 8 — Logs and Visibility
+## Stage 8 — Logs and Visibility -> DONE
 
 - Real-time build and runtime logs
 - Error reporting
@@ -89,7 +89,7 @@ At this stage, users can see what is happening during deployment.
 
 ---
 
-## Stage 9 — Public Access
+## Stage 9 — Public Access -> DONE
 
 - Reverse proxy configuration
 - Public URL generation
@@ -99,7 +99,7 @@ At this stage, deployed projects are accessible from the internet.
 
 ---
 
-## Stage 10 — Project Lifecycle Management
+## Stage 10 — Project Lifecycle Management -> CURRENT
 
 - List of deployed projects
 - Restart, stop, and delete actions

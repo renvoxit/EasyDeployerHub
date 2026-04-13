@@ -31,7 +31,8 @@ Responsibilities:
 - Docker image build
 - Container startup and cleanup
 
-The worker operates asynchronously and processes jobs from a queue.
+The worker currently runs as a background thread.
+Future versions will introduce a queue-based worker system.
 
 ---
 
