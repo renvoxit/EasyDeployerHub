@@ -11,45 +11,66 @@
 # - Perform file system operations.
 # - Contain infrastructure-specific code.
 
-import uuid
+import traceback
 
+from app.core.log_stream import append_log
+from app.db.crud.deploys import update_deployment_result, update_deployment_status
 from app.services.repo_cloner import clone_repo
 from app.services.analyzer import analyze_project
 from app.services.template_renderer import render_templates
 from app.services.docker_engine import build_image, run_container
 from app.services.proxy_manager import expose_service
-from app.core.log_stream import append_log
 
 
 def run_deploy(deploy_id: str, repo_url: str):
     """
     Full deployment pipeline
     """
+    current_stage = "starting"
 
-    append_log(deploy_id, "Deployment started")
+    try:
+        append_log(deploy_id, "Deployment started")
 
-    # Clone repo
-    workspace_path = clone_repo(deploy_id, repo_url)
+        # Clone repo
+        current_stage = "cloning repository"
+        workspace_path = clone_repo(deploy_id, repo_url)
 
-    # Analyze project
-    project_type = analyze_project(deploy_id, workspace_path)
+        # Analyze project
+        current_stage = "analyzing project"
+        project_type = analyze_project(deploy_id, workspace_path)
 
-    # Render templates
-    render_templates(deploy_id, workspace_path, project_type)
+        # Render templates
+        current_stage = "rendering templates"
+        render_templates(deploy_id, workspace_path, project_type)
 
-    # Build image
-    image_tag = build_image(deploy_id, workspace_path)
+        # Build image
+        current_stage = "building image"
+        image_tag = build_image(deploy_id, workspace_path)
 
-    # Run container
-    container_id = run_container(deploy_id, image_tag)
+        # Run container
+        current_stage = "starting container"
+        container_id = run_container(deploy_id, image_tag)
 
-    # Expose service
-    public_url = expose_service(deploy_id, container_id)
+        # Expose service
+        current_stage = "configuring proxy"
+        public_url = expose_service(deploy_id, container_id)
 
-    append_log(deploy_id, f"Deployment finished: {public_url}")
+        append_log(deploy_id, f"Deployment finished: {public_url}")
 
-    return {
-        "deploy_id": deploy_id,
-        "public_url": public_url,
-        "status": "success"
-    }
+        update_deployment_result(
+            deploy_id,
+            "success",
+            public_url,
+        )
+
+        return {
+            "deploy_id": deploy_id,
+            "public_url": public_url,
+            "status": "success",
+        }
+
+    except Exception as e:
+        append_log(deploy_id, f"Deployment failed during {current_stage}: {e}")
+        append_log(deploy_id, traceback.format_exc())
+        update_deployment_status(deploy_id, "failed")
+        raise
