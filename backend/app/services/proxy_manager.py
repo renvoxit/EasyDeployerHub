@@ -42,17 +42,6 @@ def _proxy_is_running() -> bool:
     return code == 0 and bool(state and state.get("Running"))
 
 
-def _route_host(labels: dict[str, str]) -> str | None:
-    for key, value in labels.items():
-        if key.startswith("traefik.http.routers.") and key.endswith(".rule"):
-            prefix = "Host(`"
-            suffix = "`)"
-            if value.startswith(prefix) and value.endswith(suffix):
-                return value[len(prefix):-len(suffix)]
-
-    return None
-
-
 def _direct_local_url(container_id: str) -> str | None:
     code, ports, _ = _docker_inspect_json(
         [
@@ -98,12 +87,11 @@ def expose_service(deploy_id: str, container_id: str) -> str:
             append_log(deploy_id, error)
         raise RuntimeError("Failed to inspect container labels")
 
-    route_host = _route_host(labels or {})
+    route_url = (labels or {}).get("easydeployer.route_url")
 
-    if route_host and _proxy_is_running():
-        public_url = f"http://{route_host}:8080"
-        append_log(deploy_id, f"Service exposed through Traefik at: {public_url}")
-        return public_url
+    if route_url and _proxy_is_running():
+        append_log(deploy_id, f"Service exposed through Traefik at: {route_url}")
+        return route_url
 
     direct_url = _direct_local_url(container_id)
 

@@ -132,7 +132,8 @@ def run_container(deploy_id: str, image_tag: str) -> str:
     container_name = f"easydeployer-{deploy_id[:8]}-{uuid.uuid4().hex[:6]}"
     container_port = int(_image_label(image_tag, "easydeployer.port") or "8000")
     host_port = allocate_port()
-    route_host = f"{deploy_id[:12]}.localhost"
+    route_path = f"/deployments/{deploy_id[:12]}"
+    route_url = f"http://localhost:8080{route_path}/"
 
     _ensure_network(deploy_id)
 
@@ -151,11 +152,17 @@ def run_container(deploy_id: str, image_tag: str) -> str:
             "--label",
             f"easydeployer.container_port={container_port}",
             "--label",
+            f"easydeployer.route_url={route_url}",
+            "--label",
             "traefik.enable=true",
             "--label",
-            f"traefik.http.routers.{container_name}.rule=Host(`{route_host}`)",
+            f"traefik.http.routers.{container_name}.rule=Host(`localhost`) && PathPrefix(`{route_path}`)",
             "--label",
             f"traefik.http.routers.{container_name}.entrypoints=web",
+            "--label",
+            f"traefik.http.routers.{container_name}.middlewares={container_name}-strip",
+            "--label",
+            f"traefik.http.middlewares.{container_name}-strip.stripprefix.prefixes={route_path}",
             "--label",
             f"traefik.http.services.{container_name}.loadbalancer.server.port={container_port}",
             "--network",
@@ -198,6 +205,6 @@ def run_container(deploy_id: str, image_tag: str) -> str:
 
     append_log(deploy_id, f"Container started: {container_id}")
     append_log(deploy_id, f"Container port {container_port} mapped to host port {host_port}")
-    append_log(deploy_id, f"Traefik route host: {route_host}")
+    append_log(deploy_id, f"Traefik route URL: {route_url}")
 
     return container_id
