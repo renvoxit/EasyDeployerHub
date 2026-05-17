@@ -61,14 +61,14 @@ At this stage, the system has the template-rendering boundary but not complete r
 
 ---
 
-## Stage 6 — Build and Run -> TODO
+## Stage 6 — Build and Run -> DONE
 
 - Docker image build
 - Container startup
 - Environment variable injection
 
-Current implementation returns generated image/container identifiers without running Docker.
-At this stage, projects are not yet actually running on the server.
+Current implementation builds Docker images and starts containers with local port mapping.
+At this stage, projects can run locally through a generated `http://127.0.0.1:<port>` URL.
 
 ---
 
@@ -100,8 +100,8 @@ Real Docker build/runtime log streaming is still planned.
 - Public URL generation
 - Domain routing to running containers
 
-Current implementation returns a fake local URL.
-At this stage, deployed projects are not yet accessible from the internet.
+Current implementation returns the real local Docker port URL.
+Traefik/Nginx domain routing is still required before deployed projects are accessible from the internet.
 
 ---
 

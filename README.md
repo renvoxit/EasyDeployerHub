@@ -14,7 +14,7 @@ The project focuses on clean orchestration, strict service boundaries, and incre
 
 ## Project Status
 
-EasyDeployerHub is currently a backend MVP with a working orchestration flow and partial infrastructure execution.
+EasyDeployerHub is currently a backend MVP with a working orchestration flow and local Docker deployment.
 
 Core backend components are implemented and operational:
 
@@ -22,10 +22,13 @@ Core backend components are implemented and operational:
 - Deployment request handling
 - Deployment status tracking
 - Stage-based deployment logs
+- Docker image build
+- Docker container execution
+- Local port exposure
 - GitHub OAuth and repository access
 - Deployment persistence
 
-Docker image build, container execution, reverse proxy routing, and public URL exposure are still stubbed.
+Reverse proxy routing and public internet URL exposure are still pending.
 The system is useful for backend integration work, but it is not yet a production deployment platform.
 
 ---
@@ -38,7 +41,7 @@ The backend exposes a complete deployment orchestration flow:
 
 The orchestration flow is real and modular.
 Repository cloning is real.
-Project analysis, Docker build/run, and proxy exposure are currently simplified or stubbed.
+Project analysis is basic, Docker build/run is real, and proxy exposure currently returns a local Docker port URL.
 
 ## Implemented:
 
@@ -58,7 +61,7 @@ Project analysis, Docker build/run, and proxy exposure are currently simplified 
 - Deployment lifecycle tracking (pending / running / success / failed)
 - Stage-based deployment logs
 - Deployment ID returned to client
-- Stub-generated public URL
+- Local Docker URL returned to client
 - Database persistence (SQLite / Postgres)
 - Clear separation between orchestration and services
 
@@ -80,11 +83,10 @@ Project analysis, Docker build/run, and proxy exposure are currently simplified 
 ## What Is Stubbed
 
 The following components simulate behavior but do not yet execute real infrastructure actions:
-- Project analysis (analyzer)
-- Docker build / run (docker_engine)
-- Reverse proxy routing (proxy_manager)
+- Advanced project analysis (analyzer)
+- Reverse proxy domain routing (proxy_manager)
 - Real public URL exposure
-The orchestration and repository cloning are real; later infrastructure steps are mocked.
+The orchestration, repository cloning, Docker image build, and Docker container startup are real.
 
 ## API (Current)
 
@@ -116,21 +118,20 @@ Swagger UI:
 
 ## Current Phase
 
-Backend MVP stabilization before full infrastructure integration.
+Backend MVP with local Docker deployment.
 
-Next phase focuses on replacing analyzer, Docker, and proxy stubs with real infrastructure components.
+Next phase focuses on replacing local port exposure with Traefik/Nginx routing and improving project detection.
 
 ---
 
 ## Next Steps
 
-1. Replace analyzer stub with real project detection
-2. Replace Docker build/run stubs with real Docker execution
-3. Replace proxy stub with real Traefik/Nginx routing
-4. Add deployment lifecycle management (restart / stop / delete)
-5. Add resource cleanup
-6. Add security isolation and resource limits
-7. Build frontend dashboard after API contracts stabilize
+1. Replace local port exposure with real Traefik/Nginx routing
+2. Improve project detection and runtime command detection
+3. Add deployment lifecycle management (restart / stop / delete)
+4. Add resource cleanup
+5. Add security isolation and resource limits
+6. Build frontend dashboard after API contracts stabilize
 
 ---
 
