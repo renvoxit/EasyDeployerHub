@@ -10,10 +10,21 @@
 # - Contain Docker or infrastructure details.
 # - Contain state mutation logic.
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
+
+
+class DeploymentCreate(BaseModel):
+    repo_url: str = Field(..., min_length=1)
+
+
+class DeploymentStartResponse(BaseModel):
+    deploy_id: str
+    status: str
 
 
 class DeploymentResponse(BaseModel):
     deploy_id: str
     status: str
+    repo_url: str | None = None
+    public_url: str | None = None
     created_at: str

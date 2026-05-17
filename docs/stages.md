@@ -39,67 +39,85 @@ At this stage, the system can fetch and prepare user code.
 
 ---
 
-## Stage 4 — Project Analysis -> DONE
+## Stage 4 — Project Analysis -> PARTIAL
 
 - Automatic detection of project type (frontend, backend, static, etc.)
 - Detection of build and run requirements
 - Port and runtime identification
 
-At this stage, the system understands how a project should be executed.
+Current implementation uses a hardcoded analyzer stub.
+At this stage, the system has the boundary for analysis but does not yet fully understand arbitrary projects.
 
 ---
 
-## Stage 5 — Deployment Configuration Generation -> DONE
+## Stage 5 — Deployment Configuration Generation -> PARTIAL
 
 - Automatic generation of Dockerfile
 - Selection of deployment templates
 - Preparation of runtime configuration
 
-At this stage, projects are ready for containerization.
+Current implementation writes a basic Dockerfile stub.
+At this stage, the system has the template-rendering boundary but not complete runtime-specific generation.
 
 ---
 
-## Stage 6 — Build and Run -> DONE
+## Stage 6 — Build and Run -> TODO
 
 - Docker image build
 - Container startup
 - Environment variable injection
 
-At this stage, projects are actually running on the server.
+Current implementation returns generated image/container identifiers without running Docker.
+At this stage, projects are not yet actually running on the server.
 
 ---
 
-## Stage 7 — Deployment Orchestration -> DONE
+## Stage 7 — Deployment Orchestration -> PARTIAL
 
 - Asynchronous deployment jobs
 - Queue-based execution
 - Deployment status tracking
 
-At this stage, multiple deployments can be handled reliably.
+Current implementation uses a backend background thread and deployment status tracking.
+A dedicated worker/queue system is still planned.
 
 ---
 
-## Stage 8 — Logs and Visibility -> DONE
+## Stage 8 — Logs and Visibility -> PARTIAL
 
 - Real-time build and runtime logs
 - Error reporting
 - Deployment progress visibility
 
-At this stage, users can see what is happening during deployment.
+Current implementation stores stage-based deployment logs.
+Real Docker build/runtime log streaming is still planned.
 
 ---
 
-## Stage 9 — Public Access -> DONE
+## Stage 9 — Public Access -> TODO
 
 - Reverse proxy configuration
 - Public URL generation
 - Domain routing to running containers
 
-At this stage, deployed projects are accessible from the internet.
+Current implementation returns a fake local URL.
+At this stage, deployed projects are not yet accessible from the internet.
 
 ---
 
-## Stage 10 — Project Lifecycle Management -> CURRENT
+## Stabilization Stage — Backend MVP Alignment -> CURRENT
+
+- Keep API contracts stable
+- Persist repository metadata for deployments
+- Provide deployment listing and detail endpoints
+- Keep documentation aligned with implemented behavior
+- Keep tests runnable before adding larger features
+
+At this stage, the MVP is being prepared for real infrastructure integration.
+
+---
+
+## Stage 10 — Project Lifecycle Management
 
 - List of deployed projects
 - Restart, stop, and delete actions

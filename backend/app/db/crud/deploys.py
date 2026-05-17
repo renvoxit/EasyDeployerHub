@@ -13,12 +13,12 @@ from datetime import datetime
 from app.db.session import get_conn
 
 
-def create_deployment(deploy_id: str, status: str):
+def create_deployment(deploy_id: str, status: str, repo_url: str):
     conn = get_conn()
     cur = conn.cursor()
     cur.execute(
-        "INSERT INTO deployments (id, status, public_url, created_at) VALUES (?, ?, ?, ?)",
-        (deploy_id, status, None, datetime.utcnow().isoformat())
+        "INSERT INTO deployments (id, status, repo_url, public_url, created_at) VALUES (?, ?, ?, ?, ?)",
+        (deploy_id, status, repo_url, None, datetime.utcnow().isoformat())
     )
     conn.commit()
     conn.close()
@@ -50,7 +50,7 @@ def get_deployment(deploy_id: str):
     conn = get_conn()
     cur = conn.cursor()
     cur.execute(
-        "SELECT id, status, public_url, created_at FROM deployments WHERE id = ?",
+        "SELECT id, status, repo_url, public_url, created_at FROM deployments WHERE id = ?",
         (deploy_id,)
     )
     row = cur.fetchone()
@@ -62,6 +62,32 @@ def get_deployment(deploy_id: str):
     return {
         "deploy_id": row[0],
         "status": row[1],
-        "public_url": row[2],
-        "created_at": row[3],
+        "repo_url": row[2],
+        "public_url": row[3],
+        "created_at": row[4],
     }
+
+
+def list_deployments():
+    conn = get_conn()
+    cur = conn.cursor()
+    cur.execute(
+        """
+        SELECT id, status, repo_url, public_url, created_at
+        FROM deployments
+        ORDER BY created_at DESC
+        """
+    )
+    rows = cur.fetchall()
+    conn.close()
+
+    return [
+        {
+            "deploy_id": row[0],
+            "status": row[1],
+            "repo_url": row[2],
+            "public_url": row[3],
+            "created_at": row[4],
+        }
+        for row in rows
+    ]

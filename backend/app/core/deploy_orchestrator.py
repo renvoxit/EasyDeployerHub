@@ -29,6 +29,7 @@ def run_deploy(deploy_id: str, repo_url: str):
     current_stage = "starting"
 
     try:
+        update_deployment_status(deploy_id, "running")
         append_log(deploy_id, "Deployment started")
 
         # Clone repo

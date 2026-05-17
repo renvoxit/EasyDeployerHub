@@ -15,12 +15,21 @@ import uuid
 
 from fastapi import APIRouter, HTTPException
 
-from app.api.schemas.deploy import DeploymentResponse
+from app.api.schemas.deploy import (
+    DeploymentCreate,
+    DeploymentResponse,
+    DeploymentStartResponse,
+)
 from app.core.deploy_orchestrator import run_deploy
 from app.core.log_stream import append_log, read_logs
-from app.db.crud.deploys import create_deployment, get_deployment
+from app.db.crud.deploys import create_deployment, get_deployment, list_deployments
 
 router = APIRouter(prefix="/deploy", tags=["deploy"])
+
+
+@router.get("", response_model=list[DeploymentResponse])
+def list_deploys():
+    return list_deployments()
 
 
 @router.get("/{deploy_id}", response_model=DeploymentResponse)
@@ -33,16 +42,16 @@ def get_deploy(deploy_id: str):
     return deployment
 
 
-@router.post("")
-def deploy(repo_url: str):
+@router.post("", response_model=DeploymentStartResponse)
+def deploy(payload: DeploymentCreate):
     deploy_id = str(uuid.uuid4())
 
-    create_deployment(deploy_id, "pending")
+    create_deployment(deploy_id, "pending", payload.repo_url)
     append_log(deploy_id, "Deploy request received")
 
     thread = threading.Thread(
         target=run_deploy,
-        args=(deploy_id, repo_url),
+        args=(deploy_id, payload.repo_url),
         daemon=True,
     )
 

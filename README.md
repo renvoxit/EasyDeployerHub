@@ -14,38 +14,40 @@ The project focuses on clean orchestration, strict service boundaries, and incre
 
 ## Project Status
 
-EasyDeployerHub is currently a backend MVP with a working end-to-end deployment pipeline.
+EasyDeployerHub is currently a backend MVP with a working orchestration flow and partial infrastructure execution.
 
-Core infrastructure components are implemented and operational:
+Core backend components are implemented and operational:
 
 - Git repository cloning
-- Project analysis
-- Docker image build
-- Container execution
-- Reverse proxy exposure
-- Public URL generation
+- Deployment request handling
+- Deployment status tracking
+- Stage-based deployment logs
+- GitHub OAuth and repository access
+- Deployment persistence
 
-The system is functional but still lacks production-level stability,
-security, and lifecycle management features.
+Docker image build, container execution, reverse proxy routing, and public URL exposure are still stubbed.
+The system is useful for backend integration work, but it is not yet a production deployment platform.
 
 ---
 
 ## Current State
 
-The backend supports a complete end-to-end deployment flow:
+The backend exposes a complete deployment orchestration flow:
 
 `clone_repo → analyze_project → render_templates → build_image → run_container → expose_service`
 
 The orchestration flow is real and modular.
-Infrastructure components are partially implemented.
-Core deployment pipeline is operational end-to-end.
+Repository cloning is real.
+Project analysis, Docker build/run, and proxy exposure are currently simplified or stubbed.
 
 ## Implemented:
 
 ### Deployment Layer
 
 - FastAPI backend
-- API-triggered deployment (POST /deploy)
+- API-triggered deployment (`POST /deploy`)
+- Deployment list endpoint (`GET /deploy`)
+- Deployment detail endpoint (`GET /deploy/{deploy_id}`)
 - Deployment orchestrator coordinating all stages
 - Modular service-based pipeline:
   - repo_cloner
@@ -53,7 +55,7 @@ Core deployment pipeline is operational end-to-end.
   - template_renderer
   - docker_engine
   - proxy_manager
-- Deployment lifecycle tracking (running / success / failed)
+- Deployment lifecycle tracking (pending / running / success / failed)
 - Stage-based deployment logs
 - Deployment ID returned to client
 - Stub-generated public URL
@@ -78,16 +80,30 @@ Core deployment pipeline is operational end-to-end.
 ## What Is Stubbed
 
 The following components simulate behavior but do not yet execute real infrastructure actions:
-- Git clone (repo_cloner)
+- Project analysis (analyzer)
 - Docker build / run (docker_engine)
 - Reverse proxy routing (proxy_manager)
 - Real public URL exposure
-The orchestration is real; execution is mocked.
+The orchestration and repository cloning are real; later infrastructure steps are mocked.
 
 ## API (Current)
 
 Deployment:
-`POST /deploy`
+```
+GET /deploy
+GET /deploy/{deploy_id}
+GET /deploy/status/{deploy_id}
+GET /deploy/logs/{deploy_id}
+POST /deploy
+```
+
+`POST /deploy` expects:
+
+```
+{
+  "repo_url": "https://github.com/user/repo.git"
+}
+```
 
 GitHub:
 ```
@@ -100,21 +116,21 @@ Swagger UI:
 
 ## Current Phase
 
-Backend MVP with GitHub API complete, infrastructure integration pending.
+Backend MVP stabilization before full infrastructure integration.
 
-Next phase focuses on replacing stubs with real infrastructure components.
+Next phase focuses on replacing analyzer, Docker, and proxy stubs with real infrastructure components.
 
 ---
 
 ## Next Steps
 
-1. Deployment lifecycle management (restart / stop / delete)
-2. Deployment list endpoint
-3. Resource cleanup
-4. Security isolation
-5. Resource limits
-6. Production hardening
-7. Frontend dashboard
+1. Replace analyzer stub with real project detection
+2. Replace Docker build/run stubs with real Docker execution
+3. Replace proxy stub with real Traefik/Nginx routing
+4. Add deployment lifecycle management (restart / stop / delete)
+5. Add resource cleanup
+6. Add security isolation and resource limits
+7. Build frontend dashboard after API contracts stabilize
 
 ---
 
@@ -140,6 +156,13 @@ source venv/bin/activate
 pip install -r requirements.txt
 uvicorn app.main:app --reload
 ````
+
+Run tests:
+
+```
+pip install -r backend/requirements.txt
+pytest
+```
 
 Server will be available at:
 
