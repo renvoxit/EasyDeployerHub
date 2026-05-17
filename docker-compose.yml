@@ -42,28 +42,24 @@ services:
     networks:
       - edh-network
 
-  # proxy:
-  #   image: traefik:v3.0
-  #   container_name: edh-proxy
-  #   command:
-  #     - "--providers.docker=true"
-  #     - "--providers.file.directory=/dynamic"
-  #     - "--providers.file.watch=true"
-  #     - "--entrypoints.web.address=:80"
-  #     # - "--configFile=/traefik.yml"
-
-  #   ports:
-  #     - "80:80"
-  #   volumes:
-  #     - /var/run/docker.sock:/var/run/docker.sock:ro
-  #     # - ./infra/traefik/traefik.yml:/traefik.yml:ro
-  #     - ./infra/traefik/dynamic:/dynamic:ro
-  #   networks:
-  #     - edh-network
+  proxy:
+    image: traefik:v3.0
+    container_name: edh-proxy
+    command:
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      - "--entrypoints.web.address=:80"
+    ports:
+      - "8080:80"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    networks:
+      - edh-network
 
 volumes:
   postgres_data:
 
 networks:
   edh-network:
+    name: edh-network
     driver: bridge

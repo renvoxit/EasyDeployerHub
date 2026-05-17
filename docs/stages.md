@@ -94,14 +94,15 @@ Real Docker build/runtime log streaming is still planned.
 
 ---
 
-## Stage 9 — Public Access -> TODO
+## Stage 9 — Public Access -> PARTIAL
 
 - Reverse proxy configuration
 - Public URL generation
 - Domain routing to running containers
 
-Current implementation returns the real local Docker port URL.
-Traefik/Nginx domain routing is still required before deployed projects are accessible from the internet.
+Current implementation configures Traefik labels for deployed containers and returns a routed URL when `edh-proxy` is running.
+If the proxy is not running, the system falls back to the direct local Docker port URL.
+Internet-facing domains and HTTPS are still required before deployed projects are publicly accessible outside the host.
 
 ---
 

@@ -18,6 +18,21 @@ import uuid
 from app.core.log_stream import append_log
 from app.services.port_allocator import allocate_port
 
+DOCKER_NETWORK = "edh-network"
+
+
+def _ensure_network(deploy_id: str):
+    process = subprocess.run(
+        ["docker", "network", "inspect", DOCKER_NETWORK],
+        capture_output=True,
+        text=True,
+    )
+
+    if process.returncode == 0:
+        return
+
+    _run_command(deploy_id, ["docker", "network", "create", DOCKER_NETWORK])
+
 
 def _run_command(deploy_id: str, command: list[str], cwd: str | None = None) -> subprocess.CompletedProcess:
     append_log(deploy_id, f"Running command: {' '.join(command)}")
@@ -117,6 +132,9 @@ def run_container(deploy_id: str, image_tag: str) -> str:
     container_name = f"easydeployer-{deploy_id[:8]}-{uuid.uuid4().hex[:6]}"
     container_port = int(_image_label(image_tag, "easydeployer.port") or "8000")
     host_port = allocate_port()
+    route_host = f"{deploy_id[:12]}.localhost"
+
+    _ensure_network(deploy_id)
 
     process = _run_command(
         deploy_id,
@@ -132,6 +150,16 @@ def run_container(deploy_id: str, image_tag: str) -> str:
             f"easydeployer.host_port={host_port}",
             "--label",
             f"easydeployer.container_port={container_port}",
+            "--label",
+            "traefik.enable=true",
+            "--label",
+            f"traefik.http.routers.{container_name}.rule=Host(`{route_host}`)",
+            "--label",
+            f"traefik.http.routers.{container_name}.entrypoints=web",
+            "--label",
+            f"traefik.http.services.{container_name}.loadbalancer.server.port={container_port}",
+            "--network",
+            DOCKER_NETWORK,
             "-p",
             f"127.0.0.1:{host_port}:{container_port}",
             image_tag,
@@ -170,5 +198,6 @@ def run_container(deploy_id: str, image_tag: str) -> str:
 
     append_log(deploy_id, f"Container started: {container_id}")
     append_log(deploy_id, f"Container port {container_port} mapped to host port {host_port}")
+    append_log(deploy_id, f"Traefik route host: {route_host}")
 
     return container_id

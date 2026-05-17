@@ -25,10 +25,12 @@ Core backend components are implemented and operational:
 - Docker image build
 - Docker container execution
 - Local port exposure
+- Traefik label generation for deployed containers
 - GitHub OAuth and repository access
 - Deployment persistence
 
-Reverse proxy routing and public internet URL exposure are still pending.
+Traefik routing is configured when the proxy service is running.
+Public internet URL exposure is still pending.
 The system is useful for backend integration work, but it is not yet a production deployment platform.
 
 ---
@@ -41,7 +43,7 @@ The backend exposes a complete deployment orchestration flow:
 
 The orchestration flow is real and modular.
 Repository cloning is real.
-Project analysis is basic, Docker build/run is real, and proxy exposure currently returns a local Docker port URL.
+Project analysis is basic, Docker build/run is real, and proxy exposure returns a Traefik URL when available or a direct local Docker port URL as fallback.
 
 ## Implemented:
 
@@ -84,8 +86,8 @@ Project analysis is basic, Docker build/run is real, and proxy exposure currentl
 
 The following components simulate behavior but do not yet execute real infrastructure actions:
 - Advanced project analysis (analyzer)
-- Reverse proxy domain routing (proxy_manager)
-- Real public URL exposure
+- Internet-facing domain routing
+- HTTPS termination
 The orchestration, repository cloning, Docker image build, and Docker container startup are real.
 
 ## API (Current)
@@ -118,15 +120,15 @@ Swagger UI:
 
 ## Current Phase
 
-Backend MVP with local Docker deployment.
+Backend MVP with local Docker deployment and partial Traefik routing.
 
-Next phase focuses on replacing local port exposure with Traefik/Nginx routing and improving project detection.
+Next phase focuses on completing public routing, lifecycle management, cleanup, and improving project detection.
 
 ---
 
 ## Next Steps
 
-1. Replace local port exposure with real Traefik/Nginx routing
+1. Complete public routing with domains and HTTPS
 2. Improve project detection and runtime command detection
 3. Add deployment lifecycle management (restart / stop / delete)
 4. Add resource cleanup
