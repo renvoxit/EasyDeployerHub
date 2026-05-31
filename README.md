@@ -273,3 +273,9 @@ Before opening a pull request:
 2. Do not mix unrelated features.
 3. Run tests before submitting.
 4. Update documentation if behavior changes.
+
+## Author
+
+Built by Renvoxit Systems.
+
+Portfolio: https://renvoxit.com
