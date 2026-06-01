@@ -159,7 +159,7 @@ Status: implemented with unit coverage; real Docker failure-path smoke validatio
 
 ---
 
-## Stage 12 — Resource Tracking + Consistency Audit -> CURRENT
+## Stage 12 — Resource Tracking + Consistency Audit -> DONE
 
 - Inspect persisted deployment state
 - Inspect real Docker container and image state
@@ -179,7 +179,16 @@ Detected inconsistencies include:
 - `failed` but failure stage/reason missing
 - active deployment but workspace missing
 
-Status: implemented with unit coverage.
+Validation note:
+
+- Unit tests: 28 passed
+- Real diagnostics smoke passed
+- Success diagnostics OK
+- Stopped diagnostics OK
+- Deleted diagnostics OK
+- Inconsistencies are empty in expected valid states
+
+Status: CLOSED/DONE.
 
 ---
 
