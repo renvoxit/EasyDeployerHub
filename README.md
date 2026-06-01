@@ -29,6 +29,7 @@ Core backend components are implemented and operational:
 - Deployment status tracking
 - Deployment lifecycle endpoints
 - Deployment failure reason tracking
+- Deployment diagnostics endpoint
 - Stage-based deployment logs
 - Docker image build
 - Docker container execution
@@ -83,6 +84,7 @@ The project is useful as a portfolio-grade backend system and as a learning proj
 - Deployment stop endpoint (`POST /deploy/{deploy_id}/stop`)
 - Deployment restart endpoint (`POST /deploy/{deploy_id}/restart`)
 - Deployment delete endpoint (`DELETE /deploy/{deploy_id}`)
+- Deployment diagnostics endpoint (`GET /deploy/{deploy_id}/diagnostics`)
 - Deployment orchestrator coordinating all stages
 - Modular service-based pipeline:
   - repo_cloner
@@ -93,6 +95,7 @@ The project is useful as a portfolio-grade backend system and as a learning proj
 - Deployment lifecycle tracking (pending / running / success / failed / stopped / deleted)
 - Runtime metadata persistence (`workspace_path`, `image_tag`, `container_id`)
 - Failure metadata persistence (`failure_stage`, `failure_reason`)
+- Resource consistency diagnostics
 - Best-effort cleanup on failed deploy
 - Runtime HTTP health check with timeout
 - Stage-based deployment logs
@@ -157,6 +160,7 @@ GET /deploy
 GET /deploy/{deploy_id}
 GET /deploy/status/{deploy_id}
 GET /deploy/logs/{deploy_id}
+GET /deploy/{deploy_id}/diagnostics
 POST /deploy
 POST /deploy/{deploy_id}/stop
 POST /deploy/{deploy_id}/restart
@@ -186,6 +190,7 @@ Backend MVP with local Docker deployment, partial Traefik routing, and lifecycle
 
 Lifecycle management is implemented, covered by unit tests, and validated with real Docker smoke.
 Runtime reliability and failure reason normalization are implemented with unit coverage.
+Resource diagnostics and consistency audit are implemented with unit coverage.
 
 Next phase focuses on completing real Docker failure-path smoke validation, then public routing, security limits, and improved project detection.
 
@@ -199,6 +204,7 @@ Current focus:
 
 - Validate real Docker failure paths and persisted `failure_stage` / `failure_reason`
 - Confirm failed deployments clean up created resources
+- Validate diagnostics against real Docker mismatch scenarios
 
 ### Next
 

@@ -17,6 +17,7 @@ from fastapi import APIRouter, HTTPException
 
 from app.api.schemas.deploy import (
     DeploymentCreate,
+    DeploymentDiagnosticsResponse,
     DeploymentResponse,
     DeploymentStartResponse,
 )
@@ -32,6 +33,7 @@ from app.db.crud.deploys import (
 )
 from app.services.cleanup import cleanup_resources
 from app.services.docker_engine import restart_container, stop_container
+from app.services.resource_auditor import diagnose_deployment
 
 router = APIRouter(prefix="/deploy", tags=["deploy"])
 
@@ -53,6 +55,12 @@ def list_deploys():
 @router.get("/{deploy_id}", response_model=DeploymentResponse)
 def get_deploy(deploy_id: str):
     return _get_deployment_or_404(deploy_id)
+
+
+@router.get("/{deploy_id}/diagnostics", response_model=DeploymentDiagnosticsResponse)
+def deployment_diagnostics(deploy_id: str):
+    deployment = _get_deployment_or_404(deploy_id)
+    return diagnose_deployment(deployment)
 
 
 @router.delete("/{deploy_id}", response_model=DeploymentResponse)

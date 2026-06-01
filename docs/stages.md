@@ -141,7 +141,7 @@ Validated behavior:
 
 ---
 
-## Stage 11 — Runtime Reliability + Failure Reason Normalization -> CURRENT
+## Stage 11 — Runtime Reliability + Failure Reason Normalization -> DONE
 
 - Persist normalized deployment failure details
 - Track failure stage and reason
@@ -159,7 +159,31 @@ Status: implemented with unit coverage; real Docker failure-path smoke validatio
 
 ---
 
-## Stage 12 — Security and Limits
+## Stage 12 — Resource Tracking + Consistency Audit -> CURRENT
+
+- Inspect persisted deployment state
+- Inspect real Docker container and image state
+- Inspect workspace filesystem state
+- Report deployment health and consistency issues
+
+Current implementation includes `GET /deploy/{id}/diagnostics`.
+Diagnostics return DB status, Docker container existence/state, image existence, workspace existence, public URL, health check status, and detected inconsistencies.
+
+Detected inconsistencies include:
+
+- `success` but container missing
+- `success` but container not running
+- `success` but health check fails
+- `deleted` but container, image, or workspace still exists
+- `stopped` but container running
+- `failed` but failure stage/reason missing
+- active deployment but workspace missing
+
+Status: implemented with unit coverage.
+
+---
+
+## Stage 13 — Security and Limits
 
 - Container isolation
 - Resource limits
@@ -169,7 +193,7 @@ At this stage, the platform is safe for untrusted code.
 
 ---
 
-## Stage 13 — Production Platform
+## Stage 14 — Production Platform
 
 - Monitoring
 - Stability improvements

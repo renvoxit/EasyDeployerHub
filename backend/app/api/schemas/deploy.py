@@ -33,3 +33,15 @@ class DeploymentResponse(BaseModel):
     container_id: str | None = None
     failure_stage: str | None = None
     failure_reason: str | None = None
+
+
+class DeploymentDiagnosticsResponse(BaseModel):
+    deploy_id: str
+    db_status: str
+    container_exists: bool
+    container_state: str | None = None
+    image_exists: bool
+    workspace_exists: bool
+    public_url: str | None = None
+    health_check_status: str
+    inconsistencies: list[str]

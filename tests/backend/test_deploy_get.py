@@ -20,7 +20,7 @@ from app.main import app
 from app.db import session as db_session
 from app.api.routes import deploys
 from app.core import deploy_orchestrator
-from app.services import docker_engine
+from app.services import docker_engine, resource_auditor
 
 client = TestClient(app)
 TEST_DB_PATH = Path(tempfile.gettempdir()) / "easydeployerhub-test.db"
@@ -222,6 +222,236 @@ def test_delete_deployment_cleans_resources(monkeypatch):
     assert response.json()["public_url"] is None
     assert response.json()["container_id"] is None
     assert cleaned == [("container-123", "image-123", "C:\\workspace")]
+
+
+def test_deployment_diagnostics_endpoint_returns_audit(monkeypatch):
+    insert_deployment(
+        "dep-diagnostics",
+        "success",
+        "2026-02-20T03:25:00",
+        public_url="http://localhost:8080/deployments/dep-diagnostics/",
+        workspace_path="C:\\workspace",
+        image_tag="image-123",
+        container_id="container-123",
+    )
+
+    monkeypatch.setattr(
+        deploys,
+        "diagnose_deployment",
+        lambda deployment: {
+            "deploy_id": deployment["deploy_id"],
+            "db_status": deployment["status"],
+            "container_exists": True,
+            "container_state": "running",
+            "image_exists": True,
+            "workspace_exists": True,
+            "public_url": deployment["public_url"],
+            "health_check_status": "ok",
+            "inconsistencies": [],
+        },
+    )
+
+    response = client.get("/deploy/dep-diagnostics/diagnostics")
+
+    assert response.status_code == 200
+    assert response.json() == {
+        "deploy_id": "dep-diagnostics",
+        "db_status": "success",
+        "container_exists": True,
+        "container_state": "running",
+        "image_exists": True,
+        "workspace_exists": True,
+        "public_url": "http://localhost:8080/deployments/dep-diagnostics/",
+        "health_check_status": "ok",
+        "inconsistencies": [],
+    }
+
+
+def test_diagnostics_detects_success_missing_container(monkeypatch):
+    deployment = {
+        "deploy_id": "dep-success-missing-container",
+        "status": "success",
+        "container_id": "container-123",
+        "image_tag": "image-123",
+        "workspace_path": "C:\\workspace",
+        "public_url": "http://localhost:8080/deployments/dep/",
+        "failure_stage": None,
+        "failure_reason": None,
+    }
+
+    monkeypatch.setattr(resource_auditor, "container_exists", lambda container_id: False)
+    monkeypatch.setattr(resource_auditor, "image_exists", lambda image_tag: True)
+    monkeypatch.setattr(resource_auditor, "workspace_exists", lambda workspace_path: True)
+    monkeypatch.setattr(resource_auditor, "health_check_status", lambda public_url: "ok")
+
+    diagnostics = resource_auditor.diagnose_deployment(deployment)
+
+    assert "success but container missing" in diagnostics["inconsistencies"]
+
+
+def test_diagnostics_detects_success_container_not_running(monkeypatch):
+    deployment = {
+        "deploy_id": "dep-success-stopped-container",
+        "status": "success",
+        "container_id": "container-123",
+        "image_tag": "image-123",
+        "workspace_path": "C:\\workspace",
+        "public_url": "http://localhost:8080/deployments/dep/",
+        "failure_stage": None,
+        "failure_reason": None,
+    }
+
+    monkeypatch.setattr(resource_auditor, "container_exists", lambda container_id: True)
+    monkeypatch.setattr(resource_auditor, "container_state", lambda container_id: "exited")
+    monkeypatch.setattr(resource_auditor, "image_exists", lambda image_tag: True)
+    monkeypatch.setattr(resource_auditor, "workspace_exists", lambda workspace_path: True)
+    monkeypatch.setattr(resource_auditor, "health_check_status", lambda public_url: "ok")
+
+    diagnostics = resource_auditor.diagnose_deployment(deployment)
+
+    assert "success but container not running" in diagnostics["inconsistencies"]
+
+
+def test_diagnostics_detects_success_health_check_failure(monkeypatch):
+    deployment = {
+        "deploy_id": "dep-success-health-fail",
+        "status": "success",
+        "container_id": "container-123",
+        "image_tag": "image-123",
+        "workspace_path": "C:\\workspace",
+        "public_url": "http://localhost:8080/deployments/dep/",
+        "failure_stage": None,
+        "failure_reason": None,
+    }
+
+    monkeypatch.setattr(resource_auditor, "container_exists", lambda container_id: True)
+    monkeypatch.setattr(resource_auditor, "container_state", lambda container_id: "running")
+    monkeypatch.setattr(resource_auditor, "image_exists", lambda image_tag: True)
+    monkeypatch.setattr(resource_auditor, "workspace_exists", lambda workspace_path: True)
+    monkeypatch.setattr(resource_auditor, "health_check_status", lambda public_url: "failed: timeout")
+
+    diagnostics = resource_auditor.diagnose_deployment(deployment)
+
+    assert "success but health check fails" in diagnostics["inconsistencies"]
+
+
+def test_diagnostics_detects_deleted_resources_left(monkeypatch):
+    deployment = {
+        "deploy_id": "dep-deleted-dirty",
+        "status": "deleted",
+        "container_id": "container-123",
+        "image_tag": "image-123",
+        "workspace_path": "C:\\workspace",
+        "public_url": None,
+        "failure_stage": None,
+        "failure_reason": None,
+    }
+
+    monkeypatch.setattr(resource_auditor, "container_exists", lambda container_id: True)
+    monkeypatch.setattr(resource_auditor, "container_state", lambda container_id: "exited")
+    monkeypatch.setattr(resource_auditor, "image_exists", lambda image_tag: True)
+    monkeypatch.setattr(resource_auditor, "workspace_exists", lambda workspace_path: True)
+    monkeypatch.setattr(resource_auditor, "health_check_status", lambda public_url: "not_configured")
+
+    diagnostics = resource_auditor.diagnose_deployment(deployment)
+
+    assert "deleted but container still exists" in diagnostics["inconsistencies"]
+    assert "deleted but image still exists" in diagnostics["inconsistencies"]
+    assert "deleted but workspace still exists" in diagnostics["inconsistencies"]
+
+
+def test_diagnostics_detects_stopped_container_running(monkeypatch):
+    deployment = {
+        "deploy_id": "dep-stopped-running",
+        "status": "stopped",
+        "container_id": "container-123",
+        "image_tag": "image-123",
+        "workspace_path": "C:\\workspace",
+        "public_url": "http://localhost:8080/deployments/dep/",
+        "failure_stage": None,
+        "failure_reason": None,
+    }
+
+    monkeypatch.setattr(resource_auditor, "container_exists", lambda container_id: True)
+    monkeypatch.setattr(resource_auditor, "container_state", lambda container_id: "running")
+    monkeypatch.setattr(resource_auditor, "image_exists", lambda image_tag: True)
+    monkeypatch.setattr(resource_auditor, "workspace_exists", lambda workspace_path: True)
+    monkeypatch.setattr(resource_auditor, "health_check_status", lambda public_url: "ok")
+
+    diagnostics = resource_auditor.diagnose_deployment(deployment)
+
+    assert "stopped but container running" in diagnostics["inconsistencies"]
+
+
+def test_diagnostics_detects_failed_missing_failure_info(monkeypatch):
+    deployment = {
+        "deploy_id": "dep-failed-no-info",
+        "status": "failed",
+        "container_id": None,
+        "image_tag": None,
+        "workspace_path": None,
+        "public_url": None,
+        "failure_stage": None,
+        "failure_reason": None,
+    }
+
+    monkeypatch.setattr(resource_auditor, "container_exists", lambda container_id: False)
+    monkeypatch.setattr(resource_auditor, "image_exists", lambda image_tag: False)
+    monkeypatch.setattr(resource_auditor, "workspace_exists", lambda workspace_path: False)
+    monkeypatch.setattr(resource_auditor, "health_check_status", lambda public_url: "not_configured")
+
+    diagnostics = resource_auditor.diagnose_deployment(deployment)
+
+    assert "failed but failure_stage missing" in diagnostics["inconsistencies"]
+    assert "failed but failure_reason missing" in diagnostics["inconsistencies"]
+
+
+def test_diagnostics_detects_active_workspace_missing(monkeypatch):
+    deployment = {
+        "deploy_id": "dep-active-no-workspace",
+        "status": "running",
+        "container_id": "container-123",
+        "image_tag": "image-123",
+        "workspace_path": "C:\\workspace",
+        "public_url": "http://localhost:8080/deployments/dep/",
+        "failure_stage": None,
+        "failure_reason": None,
+    }
+
+    monkeypatch.setattr(resource_auditor, "container_exists", lambda container_id: True)
+    monkeypatch.setattr(resource_auditor, "container_state", lambda container_id: "running")
+    monkeypatch.setattr(resource_auditor, "image_exists", lambda image_tag: True)
+    monkeypatch.setattr(resource_auditor, "workspace_exists", lambda workspace_path: False)
+    monkeypatch.setattr(resource_auditor, "health_check_status", lambda public_url: "ok")
+
+    diagnostics = resource_auditor.diagnose_deployment(deployment)
+
+    assert "active deployment but workspace missing" in diagnostics["inconsistencies"]
+
+
+def test_diagnostics_does_not_crash_when_docker_is_unavailable(monkeypatch):
+    deployment = {
+        "deploy_id": "dep-docker-unavailable",
+        "status": "success",
+        "container_id": "container-123",
+        "image_tag": "image-123",
+        "workspace_path": None,
+        "public_url": None,
+        "failure_stage": None,
+        "failure_reason": None,
+    }
+
+    def docker_unavailable(*args, **kwargs):
+        raise OSError("docker unavailable")
+
+    monkeypatch.setattr(resource_auditor.subprocess, "run", docker_unavailable)
+
+    diagnostics = resource_auditor.diagnose_deployment(deployment)
+
+    assert diagnostics["container_exists"] is False
+    assert diagnostics["container_state"] is None
+    assert diagnostics["image_exists"] is False
+    assert "success but container missing" in diagnostics["inconsistencies"]
 
 
 def test_get_deployment_returns_404_for_missing_id():
