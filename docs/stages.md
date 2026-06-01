@@ -118,7 +118,7 @@ At this stage, the MVP is being prepared for real infrastructure integration.
 
 ---
 
-## Stage 10 — Project Lifecycle Management -> CURRENT
+## Stage 10 — Project Lifecycle Management
 
 - List of deployed projects
 - Restart, stop, and delete actions
@@ -141,7 +141,25 @@ Required smoke validation before marking this stage DONE:
 
 ---
 
-## Stage 11 — Security and Limits
+## Stage 11 — Runtime Reliability + Failure Reason Normalization -> CURRENT
+
+- Persist normalized deployment failure details
+- Track failure stage and reason
+- Improve runtime health checks
+- Cleanup resources after failed deployments
+- Make deployment logs explain stage starts, failures, reasons, and cleanup results
+
+Current implementation stores `failure_stage` and `failure_reason` for failed deployments.
+Failure stages are normalized to `clone`, `analyze`, `render_template`, `docker_build`, `docker_run`, `health_check`, `proxy`, `cleanup`, or `unknown`.
+Runtime health checks retry until timeout and only accept HTTP `200-399` as success.
+Failed deployments attempt best-effort cleanup and log cleanup results.
+Unit coverage is in place.
+
+Status: implemented with unit coverage; real Docker failure-path smoke validation is still recommended.
+
+---
+
+## Stage 12 — Security and Limits
 
 - Container isolation
 - Resource limits
@@ -151,7 +169,7 @@ At this stage, the platform is safe for untrusted code.
 
 ---
 
-## Stage 12 — Production Platform
+## Stage 13 — Production Platform
 
 - Monitoring
 - Stability improvements

@@ -5,6 +5,7 @@ import sys
 import tempfile
 
 from fastapi.testclient import TestClient
+import pytest
 
 ROOT = Path(__file__).resolve().parents[2]
 BACKEND_DIR = ROOT / "backend"
@@ -18,6 +19,8 @@ os.environ.setdefault("GITHUB_REDIRECT_URI", "http://localhost/callback")
 from app.main import app
 from app.db import session as db_session
 from app.api.routes import deploys
+from app.core import deploy_orchestrator
+from app.services import docker_engine
 
 client = TestClient(app)
 TEST_DB_PATH = Path(tempfile.gettempdir()) / "easydeployerhub-test.db"
@@ -40,15 +43,26 @@ def insert_deployment(
     workspace_path: str | None = None,
     image_tag: str | None = None,
     container_id: str | None = None,
+    failure_stage: str | None = None,
+    failure_reason: str | None = None,
 ):
     conn = sqlite3.connect(TEST_DB_PATH)
     cur = conn.cursor()
     cur.execute(
         """
         INSERT INTO deployments (
-            id, status, repo_url, public_url, created_at, workspace_path, image_tag, container_id
+            id,
+            status,
+            repo_url,
+            public_url,
+            created_at,
+            workspace_path,
+            image_tag,
+            container_id,
+            failure_stage,
+            failure_reason
         )
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         """,
         (
             deploy_id,
@@ -59,6 +73,8 @@ def insert_deployment(
             workspace_path,
             image_tag,
             container_id,
+            failure_stage,
+            failure_reason,
         ),
     )
     conn.commit()
@@ -80,7 +96,25 @@ def test_get_deployment_returns_record():
         "workspace_path": None,
         "image_tag": None,
         "container_id": None,
+        "failure_stage": None,
+        "failure_reason": None,
     }
+
+
+def test_get_deployment_returns_failure_info():
+    insert_deployment(
+        "dep-failed",
+        "failed",
+        "2026-02-20T03:25:00",
+        failure_stage="docker_build",
+        failure_reason="Docker build failed",
+    )
+
+    response = client.get("/deploy/dep-failed")
+
+    assert response.status_code == 200
+    assert response.json()["failure_stage"] == "docker_build"
+    assert response.json()["failure_reason"] == "Docker build failed"
 
 
 def test_list_deployments_returns_records_newest_first():
@@ -195,3 +229,116 @@ def test_get_deployment_returns_404_for_missing_id():
 
     assert response.status_code == 404
     assert response.json() == {"detail": "Deployment not found"}
+
+
+def test_deploy_records_docker_build_failure_and_triggers_cleanup(monkeypatch):
+    insert_deployment("dep-build-fail", "pending", "2026-02-20T03:25:00")
+    cleaned = []
+
+    monkeypatch.setattr(deploy_orchestrator, "append_log", lambda deploy_id, line: None)
+    monkeypatch.setattr(deploy_orchestrator, "clone_repo", lambda deploy_id, repo_url: "C:\\workspace")
+    monkeypatch.setattr(deploy_orchestrator, "analyze_project", lambda deploy_id, workspace_path: "static")
+    monkeypatch.setattr(deploy_orchestrator, "render_templates", lambda deploy_id, workspace_path, project_type: None)
+    monkeypatch.setattr(
+        deploy_orchestrator,
+        "build_image",
+        lambda deploy_id, workspace_path: (_ for _ in ()).throw(RuntimeError("Docker build failed")),
+    )
+    monkeypatch.setattr(
+        deploy_orchestrator,
+        "cleanup_resources",
+        lambda deploy_id, container_id=None, image_tag=None, workspace_path=None: cleaned.append(
+            (container_id, image_tag, workspace_path)
+        ),
+    )
+
+    try:
+        deploy_orchestrator.run_deploy("dep-build-fail", "https://github.com/example/repo.git")
+    except RuntimeError:
+        pass
+
+    deployment = client.get("/deploy/dep-build-fail").json()
+    assert deployment["status"] == "failed"
+    assert deployment["failure_stage"] == "docker_build"
+    assert deployment["failure_reason"] == "Docker build failed"
+    assert cleaned == [(None, None, "C:\\workspace")]
+
+
+def test_deploy_records_docker_run_failure_and_triggers_cleanup(monkeypatch):
+    insert_deployment("dep-run-fail", "pending", "2026-02-20T03:25:00")
+    cleaned = []
+
+    monkeypatch.setattr(deploy_orchestrator, "append_log", lambda deploy_id, line: None)
+    monkeypatch.setattr(deploy_orchestrator, "clone_repo", lambda deploy_id, repo_url: "C:\\workspace")
+    monkeypatch.setattr(deploy_orchestrator, "analyze_project", lambda deploy_id, workspace_path: "static")
+    monkeypatch.setattr(deploy_orchestrator, "render_templates", lambda deploy_id, workspace_path, project_type: None)
+    monkeypatch.setattr(deploy_orchestrator, "build_image", lambda deploy_id, workspace_path: "image-123")
+    monkeypatch.setattr(
+        deploy_orchestrator,
+        "run_container",
+        lambda deploy_id, image_tag: (_ for _ in ()).throw(RuntimeError("Docker run failed")),
+    )
+    monkeypatch.setattr(
+        deploy_orchestrator,
+        "cleanup_resources",
+        lambda deploy_id, container_id=None, image_tag=None, workspace_path=None: cleaned.append(
+            (container_id, image_tag, workspace_path)
+        ),
+    )
+
+    try:
+        deploy_orchestrator.run_deploy("dep-run-fail", "https://github.com/example/repo.git")
+    except RuntimeError:
+        pass
+
+    deployment = client.get("/deploy/dep-run-fail").json()
+    assert deployment["status"] == "failed"
+    assert deployment["failure_stage"] == "docker_run"
+    assert deployment["failure_reason"] == "Docker run failed"
+    assert cleaned == [(None, "image-123", "C:\\workspace")]
+
+
+def test_deploy_records_health_check_timeout(monkeypatch):
+    insert_deployment("dep-health-fail", "pending", "2026-02-20T03:25:00")
+
+    monkeypatch.setattr(deploy_orchestrator, "append_log", lambda deploy_id, line: None)
+    monkeypatch.setattr(deploy_orchestrator, "clone_repo", lambda deploy_id, repo_url: "C:\\workspace")
+    monkeypatch.setattr(deploy_orchestrator, "analyze_project", lambda deploy_id, workspace_path: "static")
+    monkeypatch.setattr(deploy_orchestrator, "render_templates", lambda deploy_id, workspace_path, project_type: None)
+    monkeypatch.setattr(deploy_orchestrator, "build_image", lambda deploy_id, workspace_path: "image-123")
+    monkeypatch.setattr(
+        deploy_orchestrator,
+        "run_container",
+        lambda deploy_id, image_tag: (_ for _ in ()).throw(
+            RuntimeError("HTTP health check timed out after 20s")
+        ),
+    )
+    monkeypatch.setattr(deploy_orchestrator, "cleanup_resources", lambda *args, **kwargs: None)
+
+    try:
+        deploy_orchestrator.run_deploy("dep-health-fail", "https://github.com/example/repo.git")
+    except RuntimeError:
+        pass
+
+    deployment = client.get("/deploy/dep-health-fail").json()
+    assert deployment["status"] == "failed"
+    assert deployment["failure_stage"] == "health_check"
+    assert deployment["failure_reason"] == "HTTP health check timed out after 20s"
+
+
+def test_http_health_check_times_out_on_non_success_status(monkeypatch):
+    class Response:
+        status = 500
+
+        def __enter__(self):
+            return self
+
+        def __exit__(self, exc_type, exc, tb):
+            return False
+
+    monkeypatch.setattr(docker_engine, "append_log", lambda deploy_id, line: None)
+    monkeypatch.setattr(docker_engine.urllib.request, "urlopen", lambda url, timeout: Response())
+    monkeypatch.setattr(docker_engine.time, "sleep", lambda seconds: None)
+
+    with pytest.raises(RuntimeError, match="HTTP health check timed out"):
+        docker_engine._wait_for_http("dep-health", "http://127.0.0.1:1234/", timeout_seconds=0.01)

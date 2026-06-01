@@ -28,6 +28,7 @@ Core backend components are implemented and operational:
 - Deployment request handling
 - Deployment status tracking
 - Deployment lifecycle endpoints
+- Deployment failure reason tracking
 - Stage-based deployment logs
 - Docker image build
 - Docker container execution
@@ -91,7 +92,9 @@ The project is useful as a portfolio-grade backend system and as a learning proj
   - proxy_manager
 - Deployment lifecycle tracking (pending / running / success / failed / stopped / deleted)
 - Runtime metadata persistence (`workspace_path`, `image_tag`, `container_id`)
+- Failure metadata persistence (`failure_stage`, `failure_reason`)
 - Best-effort cleanup on failed deploy
+- Runtime HTTP health check with timeout
 - Stage-based deployment logs
 - Deployment ID returned to client
 - Local Docker URL returned to client
@@ -182,8 +185,9 @@ Swagger UI:
 Backend MVP with local Docker deployment, partial Traefik routing, and lifecycle management.
 
 Lifecycle management is implemented with unit coverage and is pending real Docker lifecycle smoke validation before being considered fully closed.
+Runtime reliability and failure reason normalization are implemented with unit coverage.
 
-Next phase focuses on completing the real Docker lifecycle smoke validation, then public routing, security limits, and improved project detection.
+Next phase focuses on completing real Docker lifecycle/failure-path smoke validation, then public routing, security limits, and improved project detection.
 
 ---
 
@@ -197,6 +201,7 @@ Current focus:
 - Confirm deployment runtime metadata is persisted
 - Confirm container, image, and workspace cleanup after delete
 - Confirm failed deployments clean up created resources
+- Validate real Docker failure paths and persisted `failure_stage` / `failure_reason`
 
 ### Next
 

@@ -61,7 +61,11 @@ def update_deployment_result(deploy_id: str, status: str, public_url: str):
     conn = get_conn()
     cur = conn.cursor()
     cur.execute(
-        "UPDATE deployments SET status = ?, public_url = ? WHERE id = ?",
+        """
+        UPDATE deployments
+        SET status = ?, public_url = ?, failure_stage = NULL, failure_reason = NULL
+        WHERE id = ?
+        """,
         (status, public_url, deploy_id)
     )
     conn.commit()

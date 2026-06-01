@@ -24,6 +24,7 @@ from app.core.deploy_orchestrator import run_deploy
 from app.core.log_stream import append_log, read_logs
 from app.db.crud.deploys import (
     clear_deployment_runtime,
+    clear_deployment_failure,
     create_deployment,
     get_deployment,
     list_deployments,
@@ -94,6 +95,7 @@ def restart_deploy(deploy_id: str):
 
     update_deployment_status(deploy_id, "running")
     restart_container(deploy_id, container_id)
+    clear_deployment_failure(deploy_id)
     update_deployment_status(deploy_id, "success")
 
     return _get_deployment_or_404(deploy_id)
