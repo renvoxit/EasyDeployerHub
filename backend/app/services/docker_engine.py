@@ -13,6 +13,9 @@
 import json
 import os
 import subprocess
+import time
+import urllib.error
+import urllib.request
 import uuid
 
 from app.core.log_stream import append_log
@@ -89,6 +92,45 @@ def _image_label(image_tag: str, label: str) -> str:
         return ""
 
     return process.stdout.strip()
+
+
+def _container_label(container_id: str, label: str) -> str:
+    process = subprocess.run(
+        [
+            "docker",
+            "inspect",
+            container_id,
+            "--format",
+            f"{{{{ index .Config.Labels \"{label}\" }}}}",
+        ],
+        capture_output=True,
+        text=True,
+    )
+
+    if process.returncode != 0:
+        return ""
+
+    return process.stdout.strip()
+
+
+def _wait_for_http(deploy_id: str, url: str, attempts: int = 20, delay_seconds: float = 0.5):
+    append_log(deploy_id, f"Checking HTTP health: {url}")
+
+    last_error = None
+
+    for _ in range(attempts):
+        try:
+            with urllib.request.urlopen(url, timeout=2) as response:
+                append_log(deploy_id, f"HTTP health check passed: {response.status}")
+                return
+        except urllib.error.HTTPError as e:
+            append_log(deploy_id, f"HTTP health check reached app: {e.code}")
+            return
+        except Exception as e:
+            last_error = e
+            time.sleep(delay_seconds)
+
+    raise RuntimeError(f"HTTP health check failed: {last_error}")
 
 
 def build_image(deploy_id: str, workspace_path: str) -> str:
@@ -206,5 +248,31 @@ def run_container(deploy_id: str, image_tag: str) -> str:
     append_log(deploy_id, f"Container started: {container_id}")
     append_log(deploy_id, f"Container port {container_port} mapped to host port {host_port}")
     append_log(deploy_id, f"Traefik route URL: {route_url}")
+    _wait_for_http(deploy_id, f"http://127.0.0.1:{host_port}/")
 
     return container_id
+
+
+def stop_container(deploy_id: str, container_id: str):
+    append_log(deploy_id, f"Stopping container: {container_id}")
+    _run_command(deploy_id, ["docker", "stop", container_id])
+
+
+def restart_container(deploy_id: str, container_id: str):
+    append_log(deploy_id, f"Restarting container: {container_id}")
+    _run_command(deploy_id, ["docker", "restart", container_id])
+
+    host_port = _container_label(container_id, "easydeployer.host_port")
+
+    if host_port:
+        _wait_for_http(deploy_id, f"http://127.0.0.1:{host_port}/")
+
+
+def remove_container(deploy_id: str, container_id: str):
+    append_log(deploy_id, f"Removing container: {container_id}")
+    _run_command(deploy_id, ["docker", "rm", "-f", container_id])
+
+
+def remove_image(deploy_id: str, image_tag: str):
+    append_log(deploy_id, f"Removing image: {image_tag}")
+    _run_command(deploy_id, ["docker", "rmi", "-f", image_tag])

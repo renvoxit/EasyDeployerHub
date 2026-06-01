@@ -37,15 +37,29 @@ def insert_deployment(
     created_at: str,
     repo_url: str = "https://github.com/example/repo.git",
     public_url: str | None = None,
+    workspace_path: str | None = None,
+    image_tag: str | None = None,
+    container_id: str | None = None,
 ):
     conn = sqlite3.connect(TEST_DB_PATH)
     cur = conn.cursor()
     cur.execute(
         """
-        INSERT INTO deployments (id, status, repo_url, public_url, created_at)
-        VALUES (?, ?, ?, ?, ?)
+        INSERT INTO deployments (
+            id, status, repo_url, public_url, created_at, workspace_path, image_tag, container_id
+        )
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
         """,
-        (deploy_id, status, repo_url, public_url, created_at),
+        (
+            deploy_id,
+            status,
+            repo_url,
+            public_url,
+            created_at,
+            workspace_path,
+            image_tag,
+            container_id,
+        ),
     )
     conn.commit()
     conn.close()
@@ -63,6 +77,9 @@ def test_get_deployment_returns_record():
         "repo_url": "https://github.com/example/repo.git",
         "public_url": None,
         "created_at": "2026-02-20T03:25:00",
+        "workspace_path": None,
+        "image_tag": None,
+        "container_id": None,
     }
 
 
@@ -105,6 +122,72 @@ def test_create_deployment_accepts_request_body(monkeypatch):
     deployment = client.get(f"/deploy/{body['deploy_id']}")
     assert deployment.status_code == 200
     assert deployment.json()["repo_url"] == "https://github.com/example/repo.git"
+
+
+def test_stop_deployment_updates_status(monkeypatch):
+    insert_deployment(
+        "dep-stop",
+        "success",
+        "2026-02-20T03:25:00",
+        container_id="container-123",
+    )
+    stopped = []
+
+    monkeypatch.setattr(deploys, "stop_container", lambda deploy_id, container_id: stopped.append(container_id))
+
+    response = client.post("/deploy/dep-stop/stop")
+
+    assert response.status_code == 200
+    assert response.json()["status"] == "stopped"
+    assert stopped == ["container-123"]
+
+
+def test_restart_deployment_updates_status(monkeypatch):
+    insert_deployment(
+        "dep-restart",
+        "stopped",
+        "2026-02-20T03:25:00",
+        container_id="container-123",
+    )
+    restarted = []
+
+    monkeypatch.setattr(
+        deploys,
+        "restart_container",
+        lambda deploy_id, container_id: restarted.append(container_id),
+    )
+
+    response = client.post("/deploy/dep-restart/restart")
+
+    assert response.status_code == 200
+    assert response.json()["status"] == "success"
+    assert restarted == ["container-123"]
+
+
+def test_delete_deployment_cleans_resources(monkeypatch):
+    insert_deployment(
+        "dep-delete",
+        "success",
+        "2026-02-20T03:25:00",
+        public_url="http://localhost:8080/deployments/dep-delete/",
+        workspace_path="C:\\workspace",
+        image_tag="image-123",
+        container_id="container-123",
+    )
+    cleaned = []
+
+    def fake_cleanup(deploy_id, container_id=None, image_tag=None, workspace_path=None):
+        cleaned.append((container_id, image_tag, workspace_path))
+
+    monkeypatch.setattr(deploys, "cleanup_resources", fake_cleanup)
+
+    response = client.delete("/deploy/dep-delete")
+
+    assert response.status_code == 200
+    assert response.json()["status"] == "deleted"
+    assert response.json()["public_url"] is None
+    assert response.json()["container_id"] is None
+    assert cleaned == [("container-123", "image-123", "C:\\workspace")]
 
 
 def test_get_deployment_returns_404_for_missing_id():

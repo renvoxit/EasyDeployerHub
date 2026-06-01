@@ -14,12 +14,18 @@
 import traceback
 
 from app.core.log_stream import append_log
-from app.db.crud.deploys import update_deployment_result, update_deployment_status
+from app.db.crud.deploys import (
+    clear_deployment_runtime,
+    update_deployment_result,
+    update_deployment_runtime,
+    update_deployment_status,
+)
 from app.services.repo_cloner import clone_repo
 from app.services.analyzer import analyze_project
 from app.services.template_renderer import render_templates
 from app.services.docker_engine import build_image, run_container
 from app.services.proxy_manager import expose_service
+from app.services.cleanup import cleanup_resources
 
 
 def run_deploy(deploy_id: str, repo_url: str):
@@ -27,6 +33,9 @@ def run_deploy(deploy_id: str, repo_url: str):
     Full deployment pipeline
     """
     current_stage = "starting"
+    workspace_path = None
+    image_tag = None
+    container_id = None
 
     try:
         update_deployment_status(deploy_id, "running")
@@ -35,6 +44,7 @@ def run_deploy(deploy_id: str, repo_url: str):
         # Clone repo
         current_stage = "cloning repository"
         workspace_path = clone_repo(deploy_id, repo_url)
+        update_deployment_runtime(deploy_id, workspace_path=workspace_path)
 
         # Analyze project
         current_stage = "analyzing project"
@@ -47,10 +57,12 @@ def run_deploy(deploy_id: str, repo_url: str):
         # Build image
         current_stage = "building image"
         image_tag = build_image(deploy_id, workspace_path)
+        update_deployment_runtime(deploy_id, image_tag=image_tag)
 
         # Run container
         current_stage = "starting container"
         container_id = run_container(deploy_id, image_tag)
+        update_deployment_runtime(deploy_id, container_id=container_id)
 
         # Expose service
         current_stage = "configuring proxy"
@@ -73,5 +85,12 @@ def run_deploy(deploy_id: str, repo_url: str):
     except Exception as e:
         append_log(deploy_id, f"Deployment failed during {current_stage}: {e}")
         append_log(deploy_id, traceback.format_exc())
+        cleanup_resources(
+            deploy_id,
+            container_id=container_id,
+            image_tag=image_tag,
+            workspace_path=workspace_path,
+        )
+        clear_deployment_runtime(deploy_id, clear_public_url=True)
         update_deployment_status(deploy_id, "failed")
         raise

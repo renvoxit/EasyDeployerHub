@@ -43,6 +43,15 @@ def init_db():
     if "repo_url" not in columns:
         cur.execute("ALTER TABLE deployments ADD COLUMN repo_url TEXT")
 
+    if "workspace_path" not in columns:
+        cur.execute("ALTER TABLE deployments ADD COLUMN workspace_path TEXT")
+
+    if "image_tag" not in columns:
+        cur.execute("ALTER TABLE deployments ADD COLUMN image_tag TEXT")
+
+    if "container_id" not in columns:
+        cur.execute("ALTER TABLE deployments ADD COLUMN container_id TEXT")
+
     cur.execute("""
         CREATE TABLE IF NOT EXISTS users (
             id TEXT PRIMARY KEY,

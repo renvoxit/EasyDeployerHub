@@ -28,3 +28,6 @@ class DeploymentResponse(BaseModel):
     repo_url: str | None = None
     public_url: str | None = None
     created_at: str
+    workspace_path: str | None = None
+    image_tag: str | None = None
+    container_id: str | None = None

@@ -9,3 +9,38 @@
 # - Decide when cleanup is triggered.
 # - Affect active deployments.
 # - Contain deployment logic.
+
+import shutil
+
+from app.core.log_stream import append_log
+from app.services.docker_engine import remove_container, remove_image
+
+
+def cleanup_resources(
+    deploy_id: str,
+    container_id: str | None = None,
+    image_tag: str | None = None,
+    workspace_path: str | None = None,
+):
+    """
+    Best-effort cleanup for deployment runtime resources.
+    """
+
+    if container_id:
+        try:
+            remove_container(deploy_id, container_id)
+        except Exception as e:
+            append_log(deploy_id, f"Container cleanup skipped/failed: {e}")
+
+    if image_tag:
+        try:
+            remove_image(deploy_id, image_tag)
+        except Exception as e:
+            append_log(deploy_id, f"Image cleanup skipped/failed: {e}")
+
+    if workspace_path:
+        try:
+            shutil.rmtree(workspace_path, ignore_errors=True)
+            append_log(deploy_id, f"Workspace removed: {workspace_path}")
+        except Exception as e:
+            append_log(deploy_id, f"Workspace cleanup skipped/failed: {e}")
