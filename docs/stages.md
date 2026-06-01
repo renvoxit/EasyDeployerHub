@@ -106,7 +106,7 @@ Internet-facing domains and HTTPS are still required before deployed projects ar
 
 ---
 
-## Stabilization Stage — Backend MVP Alignment -> CURRENT
+## Stabilization Stage — Backend MVP Alignment
 
 - Keep API contracts stable
 - Persist repository metadata for deployments
@@ -118,13 +118,26 @@ At this stage, the MVP is being prepared for real infrastructure integration.
 
 ---
 
-## Stage 10 — Project Lifecycle Management
+## Stage 10 — Project Lifecycle Management -> CURRENT
 
 - List of deployed projects
 - Restart, stop, and delete actions
 - Resource cleanup
 
-At this stage, users can fully manage their deployments.
+Current implementation includes lifecycle endpoints for stop, restart, and delete.
+Runtime metadata is persisted for each deployment (`workspace_path`, `image_tag`, `container_id`).
+Failed deployments attempt best-effort cleanup of created resources.
+Unit coverage is in place.
+
+Status: implemented with unit coverage; pending real Docker lifecycle smoke validation.
+
+Required smoke validation before marking this stage DONE:
+
+- `docker info` succeeds
+- A real deployment stores `workspace_path`, `image_tag`, and `container_id`
+- `POST /deploy/{id}/stop` stops the container and sets status to `stopped`
+- `POST /deploy/{id}/restart` starts the container again, passes HTTP health check, and sets status to `success`
+- `DELETE /deploy/{id}` removes container, image, workspace, and sets status to `deleted`
 
 ---
 

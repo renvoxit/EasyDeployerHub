@@ -27,6 +27,7 @@ Core backend components are implemented and operational:
 - Git repository cloning
 - Deployment request handling
 - Deployment status tracking
+- Deployment lifecycle endpoints
 - Stage-based deployment logs
 - Docker image build
 - Docker container execution
@@ -78,6 +79,9 @@ The project is useful as a portfolio-grade backend system and as a learning proj
 - API-triggered deployment (`POST /deploy`)
 - Deployment list endpoint (`GET /deploy`)
 - Deployment detail endpoint (`GET /deploy/{deploy_id}`)
+- Deployment stop endpoint (`POST /deploy/{deploy_id}/stop`)
+- Deployment restart endpoint (`POST /deploy/{deploy_id}/restart`)
+- Deployment delete endpoint (`DELETE /deploy/{deploy_id}`)
 - Deployment orchestrator coordinating all stages
 - Modular service-based pipeline:
   - repo_cloner
@@ -85,7 +89,9 @@ The project is useful as a portfolio-grade backend system and as a learning proj
   - template_renderer
   - docker_engine
   - proxy_manager
-- Deployment lifecycle tracking (pending / running / success / failed)
+- Deployment lifecycle tracking (pending / running / success / failed / stopped / deleted)
+- Runtime metadata persistence (`workspace_path`, `image_tag`, `container_id`)
+- Best-effort cleanup on failed deploy
 - Stage-based deployment logs
 - Deployment ID returned to client
 - Local Docker URL returned to client
@@ -149,6 +155,9 @@ GET /deploy/{deploy_id}
 GET /deploy/status/{deploy_id}
 GET /deploy/logs/{deploy_id}
 POST /deploy
+POST /deploy/{deploy_id}/stop
+POST /deploy/{deploy_id}/restart
+DELETE /deploy/{deploy_id}
 ```
 
 `POST /deploy` expects:
@@ -170,26 +179,24 @@ Swagger UI:
 
 ## Current Phase
 
-Backend MVP with local Docker deployment and partial Traefik routing.
+Backend MVP with local Docker deployment, partial Traefik routing, and lifecycle management.
 
-Current focus is Stage 10: lifecycle management, cleanup, resource tracking, and runtime reliability.
+Lifecycle management is implemented with unit coverage and is pending real Docker lifecycle smoke validation before being considered fully closed.
 
-Production public routing, HTTPS, worker queues, frontend dashboard, and security isolation are planned later.
+Next phase focuses on completing the real Docker lifecycle smoke validation, then public routing, security limits, and improved project detection.
 
 ---
 
 ## Roadmap
 
-### Now — Lifecycle Management
+### Now — Lifecycle Validation
 
 Current focus:
 
-- Add `DELETE /deploy/{deploy_id}` to stop and remove a deployment
-- Add `POST /deploy/{deploy_id}/stop`
-- Add `POST /deploy/{deploy_id}/restart`
-- Track Docker resources belonging to each deployment
-- Clean up containers, temporary workspaces, and images after failed deployments
-- Improve runtime health checks after container startup
+- Validate real Docker lifecycle smoke for stop / restart / delete
+- Confirm deployment runtime metadata is persisted
+- Confirm container, image, and workspace cleanup after delete
+- Confirm failed deployments clean up created resources
 
 ### Next
 
@@ -198,12 +205,11 @@ Current focus:
 - Improve Docker build/runtime logs
 - Add worker/queue-based deployment execution
 - Add better deployment error reporting
+- Complete public routing with domains and HTTPS
 
 ### Later
 
 - Frontend dashboard
-- Production public domains
-- HTTPS support
 - Security isolation for untrusted code
 - Resource limits
 - Monitoring and production hardening
