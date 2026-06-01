@@ -1,67 +1,46 @@
 # Frontend
 
-This directory contains the frontend application for the deployment platform.
+The frontend is the user interface for EasyDeployerHub. It is responsible for
+authentication screens, repository selection, deployment actions, deployment
+status, and log viewing.
 
-## Purpose
+The deployment workflow itself remains in the backend. The frontend should stay
+thin: it calls backend APIs, renders state, and provides clear controls for the
+user.
 
-The frontend provides a user interface to:
-- authenticate via GitHub
-- view repositories
-- trigger deployments
-- monitor deployment status and logs
-- manage deployed projects
-
-It communicates exclusively with the backend API.
-
-## Tech Stack
+## Stack
 
 - Vite
 - React
 - JavaScript
 - CSS
 
-## Project Structure
+## Structure
 
-- `src/pages/`  
-  Application pages (Login, Dashboard, Projects, Logs).
-
-- `src/components/`  
-  Reusable UI components (buttons, lists, cards, log viewer).
-
-- `src/api.js`  
-  Backend API interaction layer.
-
-- `src/main.jsx`  
-  Frontend application entry point.
-
-- `vite.config.js`  
-  Frontend build and dev server configuration.
-
-## Development
-
-Local development is handled via Vite dev server.
-
-The frontend expects the backend API to be available
-(either locally or via proxy configuration).
+- `src/pages/` - route-level application screens.
+- `src/components/` - reusable UI building blocks.
+- `src/api.js` - backend API client.
+- `src/main.jsx` - application entry point.
+- `vite.config.js` - Vite configuration.
 
 ## Responsibilities
 
-Frontend:
-- handles UI and user interaction
-- displays backend data
-- sends commands to backend API
+The frontend may:
 
-Backend:
-- handles authentication
-- performs deployments
-- manages state and infrastructure
+- start deployment requests through the backend API;
+- show repositories available through GitHub integration;
+- display deployment status, logs, diagnostics, and lifecycle actions;
+- provide a predictable dashboard for local deployment work.
 
-Frontend does NOT:
-- perform deployments
-- access infrastructure directly
-- store secrets
+The frontend must not:
 
-## Notes
+- execute deployment steps directly;
+- access Docker, Traefik, or host infrastructure;
+- store secrets in browser code;
+- duplicate backend orchestration rules.
 
-The frontend is a consumer of the backend API.
-It contains no business logic related to deployment execution.
+## Local Development
+
+Run the frontend with the Vite dev server and point it at a running backend API.
+Backend behavior, authentication, deployment execution, and persistence should
+be verified in the backend test suite.

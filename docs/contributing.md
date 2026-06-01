@@ -1,81 +1,68 @@
-# Contributing Guidelines
+# Contributing
 
-Thank you for your interest in contributing to Easy Deployer Hub.
+Thank you for taking the time to improve EasyDeployerHub.
 
-This project is developed as a controlled, author-led system.
-Contributions are welcome, but ownership, direction, and final decisions
-remain with the project author.
+Contributions are welcome when they improve clarity, correctness, reliability,
+or developer experience.
 
-Please read this document carefully before contributing.
+## Scope
 
----
+EasyDeployerHub is a backend-first deployment platform MVP. The goal is to
+demonstrate a clear, inspectable deployment pipeline: repository access,
+project analysis, template rendering, Docker build and runtime orchestration,
+status tracking, logs, and local routing.
 
-## Project Philosophy
+The current scope is local development and deployment workflow experimentation.
+Large product changes are easier to review when they are discussed first.
 
-Easy Deployer Hub is not a free-for-all open source project.
+## Good Contribution Areas
 
-The goal is:
-- collaborative development
-- shared technical progress
-- clear architectural control
+Useful contributions include:
 
-The goal is NOT:
-- independent forks for production use
-- third-party commercialization
-- parallel derivative projects
+- documentation improvements;
+- focused bug fixes;
+- additional tests for deployment lifecycle behavior;
+- analyzer fixtures and project detection cases;
+- clearer API examples;
+- Docker and Traefik local development notes;
+- small reliability improvements with tests.
 
----
+Please open an issue before starting work that changes orchestration flow,
+database models, authentication, Docker execution, routing behavior, or public
+API contracts. That keeps larger changes easy to coordinate.
 
-## What You Are Allowed To Do
+## Development Expectations
 
-You may:
-- Study the source code for educational purposes
-- Use the code locally for learning and experimentation
-- Propose changes via pull requests
-- Participate in discussions and architectural reviews
+Keep changes small and reviewable. A pull request should normally address one
+problem, include the reasoning behind the change, and update documentation when
+behavior changes.
 
----
+Before opening a pull request:
 
-## What You Are NOT Allowed To Do
+1. Run the relevant tests.
+2. Check that deployment-related behavior is still deterministic.
+3. Avoid mixing formatting-only changes with functional changes.
+4. Include screenshots or command output when the change affects local usage.
+5. Note any follow-up work that is intentionally left out of scope.
 
-You may NOT:
-- Use this code for commercial purposes
-- Deploy this software as a hosted service without permission
-- Redistribute the code outside this repository
-- Create derivative works intended for independent use
-- Represent this project or its code as your own product
+## Code Style
 
----
+Follow the existing structure and naming conventions. Prefer clear service
+boundaries over broad utility modules, and keep orchestration logic easy to
+trace from the API layer through the deployment stages.
 
-## Contributions and Ownership
+New behavior should be covered by tests when it changes deployment state,
+error handling, persistence, security assumptions, or API responses.
 
-By submitting a pull request or any form of contribution, you agree that:
+## Licensing
 
-- Your contribution becomes part of this repository
-- You do not gain ownership rights over the project
-- You do not gain independent usage or redistribution rights
-- All contributions are subject to the project license
+By submitting a contribution, you agree that the contribution may be included
+in this repository under the project's license. If you plan to use the project
+beyond local learning, evaluation, or contribution, please check the license
+first or contact the maintainer.
 
-The project author reserves the right to:
-- accept or reject any contribution
-- modify contributions
-- change project direction at any time
+## Review
 
----
-
-## Contribution Process
-
-1. Open an issue to discuss the change, if applicable
-2. Follow the existing architecture and code style
-3. Keep pull requests focused and minimal
-4. Be prepared for review, revision, or rejection
-
-Contributions that violate the project philosophy or license
-will not be accepted.
-
----
-
-## Final Note
-
-This project values collaboration, clarity, and long-term vision.
-If these rules do not align with your expectations, please do not contribute.
+Maintainers may ask for changes or suggest a smaller scope for a pull request.
+The aim is to keep the codebase understandable, testable, and useful for the
+deployment platform MVP.

@@ -1,55 +1,53 @@
-# Security Model
+# Security
 
-This document describes the security boundaries and assumptions of the Easy Deployer Hub.
-It defines what the system allows and what it explicitly restricts.
+This document describes the current security assumptions for EasyDeployerHub.
+The project is a local deployment MVP, so the notes below are meant to make its
+current boundaries clear.
 
----
+## Supported Use Case
 
-## Execution Isolation
+EasyDeployerHub is designed for local development, portfolio demonstration, and
+controlled testing of deployment workflows. It can build and run repositories in
+Docker containers. Production hardening is still future work.
 
-- All user projects are executed inside isolated containers
-- No project code is executed directly on the host system
-- Each deployment runs in its own container instance
+## Current Boundaries
 
----
+- Repository code is built and executed inside Docker containers.
+- Project code is not intentionally executed directly on the host.
+- Deployments are tracked with lifecycle state, logs, runtime metadata, and
+  failure information.
+- Containers can be stopped, restarted, deleted, and inspected through backend
+  lifecycle endpoints.
+- Traefik labels are generated for local routing when the proxy is available.
 
-## Resource Limits
+## Secrets
 
-- CPU and memory limits are applied per container
-- Disk usage is limited for build and runtime stages
-- Long-running or stuck deployments can be terminated
+Secrets should be supplied through environment variables or local configuration
+outside source control. They must not be committed to the repository, embedded
+in templates, or written to deployment logs.
 
----
+GitHub access is handled through OAuth. Tokens should be scoped as narrowly as
+possible and revoked when no longer needed.
 
-## Network Restrictions
+## Known Limitations
 
-- Deployed containers expose only explicitly configured ports
-- Internal services are not accessible from user containers
-- Outbound network access may be restricted in future stages
+The current MVP does not claim to provide:
 
----
+- complete protection against container escape vulnerabilities;
+- hardened sandboxing for unknown third-party repositories;
+- production-grade tenant isolation;
+- public HTTPS and domain management;
+- comprehensive resource governance;
+- secret scanning or policy enforcement for deployed repositories.
 
-## Secrets Handling
+Only run repositories you trust or can safely evaluate in your local Docker
+environment.
 
-- Secrets are provided via environment variables
-- Secrets are never stored in source code
-- Secrets are not logged or exposed in build/runtime logs
+## Reporting Security Issues
 
----
+Please do not open a public issue for sensitive security reports. Contact the
+maintainer privately with a concise description, reproduction steps, affected
+area, and any relevant logs with secrets removed.
 
-## Repository Access
-
-- Access to repositories is granted via GitHub OAuth
-- Only repositories explicitly selected by the user are accessed
-- Repository access tokens are stored securely and can be revoked
-
----
-
-## Non-Goals
-
-The system does not aim to provide:
-- Full sandboxing against all possible container escapes
-- Protection against malicious code logic inside containers
-- Guarantees for untrusted production workloads
-
-This platform is designed for development and early-stage use cases.
+For non-sensitive hardening ideas, open a normal issue and describe the threat
+model or failure mode the change is intended to address.

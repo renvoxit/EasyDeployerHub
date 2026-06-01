@@ -1,18 +1,24 @@
-Copyright (c) 2026 renvoxit
+Copyright (c) 2026 Renvoxit Systems
 
 All rights reserved.
 
-This repository is provided for educational and collaborative purposes only.
+This repository is published for portfolio, educational, and collaborative
+purposes. You may read, study, and run the code locally for personal learning,
+evaluation, or contribution to this repository.
 
-You are allowed to:
-- View and study the source code
-- Use the code for personal, non-commercial learning
-- Contribute to this repository via pull requests
+Please ask for permission before using the project in ways outside that scope,
+including:
 
-You are NOT allowed to:
-- Redistribute the code
-- Create derivative works outside this repository
-- Use the code for commercial purposes
-- Deploy, sell, or host the software as a service without explicit permission
+- redistributing this source code or substantial portions of it;
+- publishing modified versions outside this repository;
+- using the software or its source code for commercial purposes;
+- offering the software as a hosted service or managed deployment platform;
+- removing copyright, license, or attribution notices.
 
-All contributions become part of this repository and are subject to the same license.
+Contributions submitted to this repository may be reviewed, adjusted, and
+merged by the project maintainers. By submitting a contribution, you agree that
+it may become part of this repository under the terms of this license.
+
+No warranty is provided. The software is provided "as is", without guarantees
+of fitness for a particular purpose, production readiness, security, or
+availability.
