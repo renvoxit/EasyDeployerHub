@@ -212,7 +212,7 @@ before opening a pull request.
 
 ## License
 
-See [LICENSE](LICENSE) for usage terms.
+MIT. See [LICENSE](LICENSE) for details.
 
 ## Author
 
