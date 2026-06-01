@@ -10,10 +10,20 @@
 # - Affect active deployments.
 # - Contain deployment logic.
 
+import os
 import shutil
+import stat
 
 from app.core.log_stream import append_log
 from app.services.docker_engine import remove_container, remove_image
+
+
+def _make_writable(func, path, exc_info):
+    try:
+        os.chmod(path, stat.S_IWRITE)
+        func(path)
+    except Exception:
+        raise
 
 
 def cleanup_resources(
@@ -42,7 +52,11 @@ def cleanup_resources(
 
     if workspace_path:
         try:
-            shutil.rmtree(workspace_path, ignore_errors=True)
+            shutil.rmtree(workspace_path, onerror=_make_writable)
+
+            if os.path.exists(workspace_path):
+                raise RuntimeError("workspace still exists after cleanup")
+
             append_log(deploy_id, f"Cleanup result: workspace removed ({workspace_path})")
         except Exception as e:
             append_log(deploy_id, f"Cleanup result: workspace remove failed ({workspace_path}): {e}")

@@ -184,24 +184,21 @@ Swagger UI:
 
 Backend MVP with local Docker deployment, partial Traefik routing, and lifecycle management.
 
-Lifecycle management is implemented with unit coverage and is pending real Docker lifecycle smoke validation before being considered fully closed.
+Lifecycle management is implemented, covered by unit tests, and validated with real Docker smoke.
 Runtime reliability and failure reason normalization are implemented with unit coverage.
 
-Next phase focuses on completing real Docker lifecycle/failure-path smoke validation, then public routing, security limits, and improved project detection.
+Next phase focuses on completing real Docker failure-path smoke validation, then public routing, security limits, and improved project detection.
 
 ---
 
 ## Roadmap
 
-### Now — Lifecycle Validation
+### Now — Runtime Reliability Validation
 
 Current focus:
 
-- Validate real Docker lifecycle smoke for stop / restart / delete
-- Confirm deployment runtime metadata is persisted
-- Confirm container, image, and workspace cleanup after delete
-- Confirm failed deployments clean up created resources
 - Validate real Docker failure paths and persisted `failure_stage` / `failure_reason`
+- Confirm failed deployments clean up created resources
 
 ### Next
 

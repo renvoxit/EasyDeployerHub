@@ -118,7 +118,7 @@ At this stage, the MVP is being prepared for real infrastructure integration.
 
 ---
 
-## Stage 10 — Project Lifecycle Management
+## Stage 10 — Project Lifecycle Management -> DONE
 
 - List of deployed projects
 - Restart, stop, and delete actions
@@ -129,9 +129,9 @@ Runtime metadata is persisted for each deployment (`workspace_path`, `image_tag`
 Failed deployments attempt best-effort cleanup of created resources.
 Unit coverage is in place.
 
-Status: implemented with unit coverage; pending real Docker lifecycle smoke validation.
+Real Docker lifecycle smoke validation passed.
 
-Required smoke validation before marking this stage DONE:
+Validated behavior:
 
 - `docker info` succeeds
 - A real deployment stores `workspace_path`, `image_tag`, and `container_id`
