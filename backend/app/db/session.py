@@ -52,6 +52,12 @@ def init_db():
     if "container_id" not in columns:
         cur.execute("ALTER TABLE deployments ADD COLUMN container_id TEXT")
 
+    if "failure_stage" not in columns:
+        cur.execute("ALTER TABLE deployments ADD COLUMN failure_stage TEXT")
+
+    if "failure_reason" not in columns:
+        cur.execute("ALTER TABLE deployments ADD COLUMN failure_reason TEXT")
+
     cur.execute("""
         CREATE TABLE IF NOT EXISTS users (
             id TEXT PRIMARY KEY,

@@ -113,24 +113,28 @@ def _container_label(container_id: str, label: str) -> str:
     return process.stdout.strip()
 
 
-def _wait_for_http(deploy_id: str, url: str, attempts: int = 20, delay_seconds: float = 0.5):
+def _wait_for_http(deploy_id: str, url: str, timeout_seconds: float = 20, delay_seconds: float = 0.5):
     append_log(deploy_id, f"Checking HTTP health: {url}")
 
     last_error = None
+    deadline = time.monotonic() + timeout_seconds
 
-    for _ in range(attempts):
+    while time.monotonic() < deadline:
         try:
             with urllib.request.urlopen(url, timeout=2) as response:
-                append_log(deploy_id, f"HTTP health check passed: {response.status}")
-                return
+                if 200 <= response.status <= 399:
+                    append_log(deploy_id, f"HTTP health check passed: {response.status}")
+                    return
+
+                last_error = RuntimeError(f"Unexpected HTTP status: {response.status}")
         except urllib.error.HTTPError as e:
-            append_log(deploy_id, f"HTTP health check reached app: {e.code}")
-            return
+            last_error = RuntimeError(f"Unexpected HTTP status: {e.code}")
         except Exception as e:
             last_error = e
-            time.sleep(delay_seconds)
 
-    raise RuntimeError(f"HTTP health check failed: {last_error}")
+        time.sleep(delay_seconds)
+
+    raise RuntimeError(f"HTTP health check timed out after {timeout_seconds}s: {last_error}")
 
 
 def build_image(deploy_id: str, workspace_path: str) -> str:

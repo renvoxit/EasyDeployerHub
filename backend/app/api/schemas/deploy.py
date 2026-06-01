@@ -31,3 +31,5 @@ class DeploymentResponse(BaseModel):
     workspace_path: str | None = None
     image_tag: str | None = None
     container_id: str | None = None
+    failure_stage: str | None = None
+    failure_reason: str | None = None

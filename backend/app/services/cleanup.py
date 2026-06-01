@@ -29,18 +29,20 @@ def cleanup_resources(
     if container_id:
         try:
             remove_container(deploy_id, container_id)
+            append_log(deploy_id, f"Cleanup result: container removed ({container_id})")
         except Exception as e:
-            append_log(deploy_id, f"Container cleanup skipped/failed: {e}")
+            append_log(deploy_id, f"Cleanup result: container remove failed ({container_id}): {e}")
 
     if image_tag:
         try:
             remove_image(deploy_id, image_tag)
+            append_log(deploy_id, f"Cleanup result: image removed ({image_tag})")
         except Exception as e:
-            append_log(deploy_id, f"Image cleanup skipped/failed: {e}")
+            append_log(deploy_id, f"Cleanup result: image remove failed ({image_tag}): {e}")
 
     if workspace_path:
         try:
             shutil.rmtree(workspace_path, ignore_errors=True)
-            append_log(deploy_id, f"Workspace removed: {workspace_path}")
+            append_log(deploy_id, f"Cleanup result: workspace removed ({workspace_path})")
         except Exception as e:
-            append_log(deploy_id, f"Workspace cleanup skipped/failed: {e}")
+            append_log(deploy_id, f"Cleanup result: workspace remove failed ({workspace_path}): {e}")

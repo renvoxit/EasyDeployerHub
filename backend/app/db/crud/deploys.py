@@ -24,6 +24,28 @@ def create_deployment(deploy_id: str, status: str, repo_url: str):
     conn.close()
 
 
+def update_deployment_failure(deploy_id: str, failure_stage: str, failure_reason: str):
+    conn = get_conn()
+    cur = conn.cursor()
+    cur.execute(
+        "UPDATE deployments SET failure_stage = ?, failure_reason = ? WHERE id = ?",
+        (failure_stage, failure_reason, deploy_id),
+    )
+    conn.commit()
+    conn.close()
+
+
+def clear_deployment_failure(deploy_id: str):
+    conn = get_conn()
+    cur = conn.cursor()
+    cur.execute(
+        "UPDATE deployments SET failure_stage = NULL, failure_reason = NULL WHERE id = ?",
+        (deploy_id,),
+    )
+    conn.commit()
+    conn.close()
+
+
 def update_deployment_status(deploy_id: str, status: str):
     conn = get_conn()
     cur = conn.cursor()
@@ -114,7 +136,17 @@ def get_deployment(deploy_id: str):
     cur = conn.cursor()
     cur.execute(
         """
-        SELECT id, status, repo_url, public_url, created_at, workspace_path, image_tag, container_id
+        SELECT
+            id,
+            status,
+            repo_url,
+            public_url,
+            created_at,
+            workspace_path,
+            image_tag,
+            container_id,
+            failure_stage,
+            failure_reason
         FROM deployments
         WHERE id = ?
         """,
@@ -135,6 +167,8 @@ def get_deployment(deploy_id: str):
         "workspace_path": row[5],
         "image_tag": row[6],
         "container_id": row[7],
+        "failure_stage": row[8],
+        "failure_reason": row[9],
     }
 
 
@@ -143,7 +177,17 @@ def list_deployments():
     cur = conn.cursor()
     cur.execute(
         """
-        SELECT id, status, repo_url, public_url, created_at, workspace_path, image_tag, container_id
+        SELECT
+            id,
+            status,
+            repo_url,
+            public_url,
+            created_at,
+            workspace_path,
+            image_tag,
+            container_id,
+            failure_stage,
+            failure_reason
         FROM deployments
         ORDER BY created_at DESC
         """
@@ -161,6 +205,8 @@ def list_deployments():
             "workspace_path": row[5],
             "image_tag": row[6],
             "container_id": row[7],
+            "failure_stage": row[8],
+            "failure_reason": row[9],
         }
         for row in rows
     ]
